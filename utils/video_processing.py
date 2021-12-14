@@ -27,13 +27,13 @@ def add_audio_from_another_video(video_with_sound: str,
                                  fast_cpu=True,
                                  gpu=False) -> None:
     
-    if not os.path.exists('./videos/audio/'):
-        os.makedirs('./videos/audio/')
+    if not os.path.exists('./examples/audio/'):
+        os.makedirs('./examples/audio/')
     fast_cmd = "-c:v libx264 -preset ultrafast -crf 18" if fast_cpu else ""
     gpu_cmd = "-c:v h264_nvenc" if gpu else ""
-    os.system(f"ffmpeg -i {video_with_sound} -vn -vcodec h264_nvenc ./videos/audio/{audio_name}.m4a")
-    os.system(f"ffmpeg -i {video_without_sound} -i ./videos/audio/{audio_name}.m4a {fast_cmd} {gpu_cmd}{video_without_sound[:-4]}_audio.mp4 -y")
-    os.system(f"rm -rf ./videos/audio/{audio_name}.m4a")
+    os.system(f"ffmpeg -i {video_with_sound} -vn -vcodec h264_nvenc ./examples/audio/{audio_name}.m4a")
+    os.system(f"ffmpeg -i {video_without_sound} -i ./examples/audio/{audio_name}.m4a {fast_cmd} {gpu_cmd}{video_without_sound[:-4]}_audio.mp4 -y")
+    os.system(f"rm -rf ./examples/audio/{audio_name}.m4a")
     os.system(f"mv {video_without_sound[:-4]}_audio.mp4 {video_without_sound}")
     
         
@@ -153,17 +153,17 @@ def resize_frames(crop_frames: List[np.ndarray], new_size=(256, 256)) -> Tuple[L
 
 
 def get_final_video_frame(final_frames: List[np.ndarray],
-                            crop_frames: List[np.ndarray],
-                            full_frames: List[np.ndarray],
-                            tfm_array: List[np.ndarray],
-                            OUT_VIDEO_NAME: str,
-                            fps: float, 
-                            handler) -> None:
+                          crop_frames: List[np.ndarray],
+                          full_frames: List[np.ndarray],
+                          tfm_array: List[np.ndarray],
+                          OUT_VIDEO_NAME: str,
+                          fps: float, 
+                          handler) -> None:
     """
     Create final video from frames
     """
 
-    out = cv2.VideoWriter(f"./videos/result/{OUT_VIDEO_NAME}", cv2.VideoWriter_fourcc(*'MP4V'), fps, (full_frames[0].shape[1], full_frames[0].shape[0]))
+    out = cv2.VideoWriter(f"{OUT_VIDEO_NAME}", cv2.VideoWriter_fourcc(*'MP4V'), fps, (full_frames[0].shape[1], full_frames[0].shape[0]))
 
     params = None 
     size = (full_frames[0].shape[0], full_frames[0].shape[1])
