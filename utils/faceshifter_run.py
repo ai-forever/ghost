@@ -1,7 +1,7 @@
 import torch
 import numpy as np
 
-
+# used
 def faceshifter_batch(source_emb: torch.tensor, 
                       target: torch.tensor,
                       G: torch.nn.Module) -> np.ndarray:
@@ -23,15 +23,15 @@ def faceshifter_batch(source_emb: torch.tensor,
     return Y_st
 
 
-def faceshifter_onnx(source_emb: np.array,
-                     target: np.array,
-                     G_session: "onnxruntime session") -> np.ndarray:
-    """
-    Apply faceshifter using onnx version of model
-    """
+# def faceshifter_onnx(source_emb: np.array,
+#                      target: np.array,
+#                      G_session: "onnxruntime session") -> np.ndarray:
+#     """
+#     Apply faceshifter using onnx version of model
+#     """
     
-    Y_st, *_ = G_session.run(None, {'Xt': target.astype(np.float16), 'embeds': source_emb.astype(np.float16)}) 
-    Y_st = Y_st.transpose([0, 2, 3, 1])*0.5 + 0.5
-    Y_st = (Y_st*255)[:, :, :, ::-1].astype(np.uint8)
+#     Y_st, *_ = G_session.run(None, {'Xt': target.astype(np.float16), 'embeds': source_emb.astype(np.float16)}) 
+#     Y_st = Y_st.transpose([0, 2, 3, 1])*0.5 + 0.5
+#     Y_st = (Y_st*255)[:, :, :, ::-1].astype(np.uint8)
     
-    return Y_st
+#     return Y_st
