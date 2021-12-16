@@ -73,14 +73,22 @@ def face_mask_static(image: np.ndarray, landmarks: np.ndarray, landmarks_tgt: np
         
         offset = max(left, right)
         
-        if offset > -2: # изначально было -1
+        if offset > 6: # изначально было -1
             erode = 15
             sigmaX = 15
-            sigmaY = 15
-        else:
+            sigmaY = 10
+        elif offset > 3:
+            erode = 10
+            sigmaX = 10
+            sigmaY = 8
+        elif offset < -3:
             erode = -5
             sigmaX = 5
-            sigmaY = 15
+            sigmaY = 10
+        else:
+            erode = 5
+            sigmaX = 5
+            sigmaY = 5
         
     else:
         erode = params[0]
@@ -88,7 +96,9 @@ def face_mask_static(image: np.ndarray, landmarks: np.ndarray, landmarks_tgt: np
         sigmaY = params[2]
     
     if erode == 15:
-        landmarks = expand_eyebrows_our(landmarks, eyebrows_expand_mod=2.0)
+        landmarks = expand_eyebrows_our(landmarks, eyebrows_expand_mod=1.7)
+    else:
+        landmarks = expand_eyebrows_our(landmarks, eyebrows_expand_mod=1.0)
     
     mask = get_mask(image, landmarks)
     mask = erode_and_blur(mask, erode, sigmaX, sigmaY, True)
