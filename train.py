@@ -21,11 +21,12 @@ sys.path.append('./apex/')
 from apex import amp
 from network.AEI_Net import *
 from network.MultiscaleDiscriminator import *
-from utils.Dataset import FaceEmbedVGG2, FaceEmbed
-from utils.image_processing import torch2image, make_image, make_image_list, get_faceswap
-from utils.losses import hinge_loss, compute_discriminator_loss, compute_generator_losses
-from utils.detector import detect_landmarks, paint_eyes
+from utils.training.Dataset import FaceEmbedVGG2, FaceEmbed
+from utils.training.image_processing import make_image_list, get_faceswap
+from utils.training.losses import hinge_loss, compute_discriminator_loss, compute_generator_losses
+from utils.training.detector import detect_landmarks, paint_eyes
 from AdaptiveWingLoss.core import models
+from arcface_model.iresnet import iresnet100
 
 print("finished imports")
 
@@ -140,13 +141,13 @@ def train_one_epoch(G: 'generator model',
             ### Посмотрим как выглядит свап на трех конкретных фотках, чтобы проследить динамику
             G.eval()
 
-            res1 = get_faceswap('images/source1.png', 'images/target1.png', G, netArc, device)
-            res2 = get_faceswap('images/source2.png', 'images/target2.png', G, netArc, device)  
-            res3 = get_faceswap('images/source3.png', 'images/target3.png', G, netArc, device)
+            res1 = get_faceswap('examples/images/training//source1.png', 'examples/images/training//target1.png', G, netArc, device)
+            res2 = get_faceswap('examples/images/training//source2.png', 'examples/images/training//target2.png', G, netArc, device)  
+            res3 = get_faceswap('examples/images/training//source3.png', 'examples/images/training//target3.png', G, netArc, device)
             
-            res4 = get_faceswap('images/source4.png', 'images/target4.png', G, netArc, device)
-            res5 = get_faceswap('images/source5.png', 'images/target5.png', G, netArc, device)  
-            res6 = get_faceswap('images/source6.png', 'images/target6.png', G, netArc, device)
+            res4 = get_faceswap('examples/images/training//source4.png', 'examples/images/training//target4.png', G, netArc, device)
+            res5 = get_faceswap('examples/images/training//source5.png', 'examples/images/training//target5.png', G, netArc, device)  
+            res6 = get_faceswap('examples/images/training//source6.png', 'examples/images/training//target6.png', G, netArc, device)
             
             output1 = np.concatenate((res1, res2, res3), axis=0)
             output2 = np.concatenate((res4, res5, res6), axis=0)
@@ -156,8 +157,6 @@ def train_one_epoch(G: 'generator model',
             wandb.log({"our_images":wandb.Image(output, caption=f"{epoch:03}" + '_' + f"{iteration:06}")})
 
             G.train()
-
-#     wandb.log({"gen_images":wandb.Image(image, caption="Gen Images")})
 
 
 def train(args, device):
@@ -172,9 +171,9 @@ def train(args, device):
     D.train()
     
     # initializing model for identity extraction
-    netArc_checkpoint = torch.load('arcface_model/arcface_checkpoint.tar')
-    netArc = netArc_checkpoint['model'].module
-    netArc = netArc.cuda()
+    netArc = iresnet100(fp16=False)
+    netArc.load_state_dict(torch.load('arcface_model/backbone.pth'))
+    netArc=netArc.cuda()
     netArc.eval()
     
     if args.eye_detector_loss:
@@ -213,7 +212,7 @@ def train(args, device):
             D.load_state_dict(torch.load(args.D_path, map_location=torch.device('cpu')), strict=False)
             print("Loaded pretrained weights for G and D")
         except FileNotFoundError as e:
-            print("Not fould pretrained weights. Continue without any pretrained weights.")
+            print("Not found pretrained weights. Continue without any pretrained weights.")
     
     if args.vgg:
         dataset = FaceEmbedVGG2(args.dataset_path, same_prob=args.same_person, same_identity=args.same_identity)
@@ -260,31 +259,31 @@ if __name__ == "__main__":
     # weights for loss
     parser.add_argument('--weight_adv', default=1, type=float)
     parser.add_argument('--weight_attr', default=10, type=float)
-    parser.add_argument('--weight_id', default=100, type=float)
+    parser.add_argument('--weight_id', default=20, type=float)
     parser.add_argument('--weight_rec', default=10, type=float)
-    parser.add_argument('--weight_eyes', default=1700, type=float)
+    parser.add_argument('--weight_eyes', default=0., type=float)
     # training params you may want to change
     parser.add_argument('--same_person', default=0.2, type=float, help='Probability of using same person identity during training')
     parser.add_argument('--same_identity', default=True, type=bool, help='Using simswap approach, when source_id = target_id. Only possible with vgg=True')
     parser.add_argument('--diff_eq_same', default=False, type=bool, help='Don\'t use info about where is defferent identities')
     parser.add_argument('--pretrained', default=True, type=bool, help='If using the pretrained weights for training or not')
     parser.add_argument('--discr_force', default=False, type=bool, help='If True Discriminator would not train when adversarial loss is high')
-    parser.add_argument('--scheduler', default=True, type=bool, help='If True decreasing LR is used for learning of generator and discriminator')
+    parser.add_argument('--scheduler', default=False, type=bool, help='If True decreasing LR is used for learning of generator and discriminator')
     parser.add_argument('--scheduler_step', default=5000, type=int)
     parser.add_argument('--scheduler_gamma', default=0.2, type=int, help='It is value, which shows how many times to decrease LR')
-    parser.add_argument('--eye_detector_loss', default=True, type=bool, help='If True eye loss with using AdaptiveWingLoss detector is applied to generator')
+    parser.add_argument('--eye_detector_loss', default=False, type=bool, help='If True eye loss with using AdaptiveWingLoss detector is applied to generator')
     # info about this run
     parser.add_argument('--run_name', required=True, type=str, help='Name of this run. Used to create folders where to save the weights.')
     parser.add_argument('--wandb_project', default='aei-net-eyes', type=str)
     parser.add_argument('--wandb_entity', default='sber-ai-faceswap', type=str)
     # training params you probably don't want to change
-    parser.add_argument('--batch_size', default=19, type=int)
+    parser.add_argument('--batch_size', default=16, type=int)
     parser.add_argument('--lr_G', default=4e-4, type=float)
     parser.add_argument('--lr_D', default=4e-4, type=float)
     parser.add_argument('--max_epoch', default=2000, type=int)
     parser.add_argument('--show_step', default=500, type=int)
     parser.add_argument('--save_epoch', default=1, type=int)
-    parser.add_argument('--optim_level', default='O1', type=str)
+    parser.add_argument('--optim_level', default='O2', type=str)
 
     args = parser.parse_args()
     
