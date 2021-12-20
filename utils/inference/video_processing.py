@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 import os
+from PIL import Image
 from typing import List, Tuple, Callable, Any
 from tqdm import tqdm
 import traceback
@@ -10,6 +11,8 @@ from .image_processing import normalize_and_torch
 
 import torch
 import torch.nn.functional as F
+from torch.utils.data import DataLoader, Dataset
+import torchvision.transforms as transforms
 import kornia
 
 
@@ -203,7 +206,45 @@ def get_final_video_frame(final_frames: List[np.ndarray],
 
     out.release()
     
+
+class Frames(Dataset):
+    def __init__(self, frames_list):
+        self.frames_list = frames_list
+        
+        self.transforms = transforms.Compose([
+            #transforms.Resize((512, 512)),
+            transforms.ToTensor()
+        ])
+
+    def __getitem__(self, idx):        
+        #frame = self.frames_list[idx][:, :, ::-1]
+        frame = Image.fromarray(self.frames_list[idx])
+            
+        return self.transforms(frame)
+
+    def __len__(self):
+        return len(self.frames_list)
     
+    
+def face_enhancement(final_frames: List[np.ndarray], model) -> List[np.ndarray]:
+    dataset = Frames(final_frames)
+    dataloader = DataLoader(dataset, batch_size=20, shuffle=False, num_workers=1, drop_last=False)
+    
+    enhanced_frames = []
+
+    for iteration, data in tqdm(enumerate(dataloader)):
+        frames = data
+        data = {'image': frames, 'label': frames}
+        generated = model(data, mode='inference2')
+        generated = torch.clamp(generated*255, 0, 255)
+        generated = (generated).type(torch.uint8).permute(0,2,3,1).cpu().detach().numpy()
+        for i in range(len(generated)):
+            enhanced_frames.append(generated[i])
+            
+    return enhanced_frames
+
+
+
 # def get_final_video(final_frames: List[np.ndarray],
 #                     crop_frames: List[np.ndarray],
 #                     full_frames: List[np.ndarray],
