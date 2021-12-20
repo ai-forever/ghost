@@ -1,0 +1,3 @@
+[submodule "AdaptiveWingLoss"]
+	path = AdaptiveWingLoss
+	url = https://github.com/NastyaMittseva/AdaptiveWingLoss

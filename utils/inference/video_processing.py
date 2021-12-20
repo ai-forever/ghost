@@ -198,6 +198,7 @@ def get_final_video_frame(final_frames: List[np.ndarray],
             mask_t = kornia.warp_affine(mask, mat_rev, size)
             final = (mask_t*swap_t + (1-mask_t)*frame).type(torch.uint8).squeeze().permute(1,2,0).cpu().detach().numpy()
             out.write(final)
+            torch.cuda.empty_cache()
         except Exception as e:
             traceback.print_tb(e.__traceback__)
             print(e)
