@@ -11,3 +11,6 @@ wget -P ./weights https://github.com/Danyache/sber-swap/releases/download/sber-s
 
 # load model for eyes loss
 wget -P ./AdaptiveWingLoss/AWL_detector https://github.com/Danyache/sber-swap/releases/download/awl_detector/WFLW_4HG.pth
+
+# load super res model
+wget -P ./weights https://github.com/Danyache/sber-swap/releases/download/super-res/10_net_G.pth
