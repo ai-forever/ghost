@@ -10,5 +10,4 @@ wget -P ./insightface_func/models/antelope https://github.com/Danyache/sber-swap
 wget -P ./weights https://github.com/Danyache/sber-swap/releases/download/sber-swap-v1.0/G_0_035000_init_arch_arcface2.pth
 
 # load super res model
-wget -P ./weights https://github.com/Danyache/sber-swap/releases/download/sber-swap-v1.0/10_net_G.pth
-
+wget -P ./weights https://github.com/Danyache/sber-swap/releases/download/super-res/10_net_G.pth
