@@ -6,4 +6,5 @@
 ![](/examples/images/example2.png)
 
 ## Video Swap
-<img src="/examples/videos/orig.webp" style="width: 50%; height: 50%"/>
+<img src="/examples/videos/orig.webp" width="48">
+
