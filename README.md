@@ -7,6 +7,7 @@
 
 ## Video Swap
 <div>
-<img src="/examples/videos/orig.webp" width="300"/>
-<img src="/examples/videos/elon.webp" width="300"/>
+<img src="/examples/videos/orig.webp" width="350"/>
+<img src="/examples/videos/elon.webp" width="350"/>
+<img src="/examples/videos/khabenskii.webp" width="350"/>
 <div/>
