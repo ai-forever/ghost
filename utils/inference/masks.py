@@ -110,20 +110,20 @@ def face_mask_static(image: np.ndarray, landmarks: np.ndarray, landmarks_tgt: np
     return mask/255
 
 
-# def face_mask_old(image: np.ndarray, landmarks: np.ndarray) -> np.ndarray:
-#     """
-#     Get the final mask, using landmarks and applying blur
-#     """
-#     landmarks = expand_eyebrows_our(landmarks, eyebrows_expand_mod=3.5)
-#     landmarks = np.delete(landmarks, [7, 8, 0, 23, 24], axis=0)
+def face_mask_old(image: np.ndarray, landmarks: np.ndarray) -> np.ndarray:
+    """
+    Get the final mask, using landmarks and applying blur
+    """
+    landmarks = expand_eyebrows_our(landmarks, eyebrows_expand_mod=3.5)
+    landmarks = np.delete(landmarks, [7, 8, 0, 23, 24], axis=0)
     
-#     mask = get_mask(image, landmarks)
-#     kernel = np.ones((7, 7), 'uint8')
-#     mask = cv2.erode(mask, kernel, iterations=1)
-#     mask = cv2.GaussianBlur(mask, (87, 87), 0)
-#     #mask = cv2.GaussianBlur(mask, (55, 55), 0)
+    mask = get_mask(image, landmarks)
+    kernel = np.ones((7, 7), 'uint8')
+    mask = cv2.erode(mask, kernel, iterations=1)
+    mask = cv2.GaussianBlur(mask, (87, 87), 0)
+    #mask = cv2.GaussianBlur(mask, (55, 55), 0)
     
-#     return mask/255
+    return mask/255
 
 # used
 def erode_and_blur(mask_input, erode, sigmaX, sigmaY, fade_to_border = True):
