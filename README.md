@@ -22,6 +22,8 @@
   ```bash
   git clone https://github.com/Danyache/sber-swap.git
   cd sber-swap
+  git submodule init
+  git submodule update
   ```
 2. Install dependent packages
   ```bash
@@ -31,3 +33,10 @@
   ```bash
   sh download_models.sh
   ```
+## Training
+  
+We also provide the training code for face swap model as follows:
+  1. Download [VGGFace2 Dataset] (https://www.robots.ox.ac.uk/~vgg/data/vgg_face/).
+  2. Crop and align faces with out detection model.
+  3. Start training. 
+  > python train.py
