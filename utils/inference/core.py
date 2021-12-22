@@ -8,6 +8,7 @@ from tqdm import tqdm
 from .faceshifter_run import faceshifter_batch
 from .image_processing import crop_face, normalize_and_torch, normalize_and_torch_batch
 from .video_processing import read_video, crop_frames_and_get_transforms, resize_frames, crop_frames_and_get_transforms_multi
+import time
 
 
 # used
@@ -107,7 +108,7 @@ def model_inference_multi(full_frames: List[np.ndarray],
     # Get Arcface embeddings of target image
     target_norm = normalize_and_torch_batch(np.array(target))
     target_embeds = netArc(F.interpolate(target_norm, scale_factor=0.5, mode='bilinear', align_corners=True))
-
+    
     # Get the cropped faces from original frames and transformations to get those crops
     crop_frames_list, tfm_array_list = crop_frames_and_get_transforms_multi(full_frames, target_embeds, app, netArc, crop_size, similarity_th=0.15)
     

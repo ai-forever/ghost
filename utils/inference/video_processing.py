@@ -108,14 +108,15 @@ def crop_frames_and_get_transforms_multi(full_frames: List[np.ndarray],
     crop_frames = [ [] for _ in range(target_embeds.shape[0]) ]
     tfm_array = [ [] for _ in range(target_embeds.shape[0]) ]
     
-    target_embeds = torch.nn.functional.normalize(target_embeds)
+    target_embeds = F.normalize(target_embeds)
     for frame in tqdm(full_frames):
         try:
             faces, tfms = app.get(frame, crop_size)
             if len(faces) > 1:
                 face_norm = normalize_and_torch_batch(np.array(faces))
-                face_embeds = netArc(F.interpolate(face_norm, scale_factor=0.5, mode='bilinear', align_corners=True))
-                face_embeds = torch.nn.functional.normalize(face_embeds)
+                face_norm = F.interpolate(face_norm, scale_factor=0.5, mode='bilinear', align_corners=True)
+                face_embeds = netArc(face_norm)
+                face_embeds = F.normalize(face_embeds)
                 
                 similarity = face_embeds@target_embeds.T
                 best_idxs = similarity.argmax(0).detach().cpu().numpy()
