@@ -14,7 +14,6 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader, Dataset
 import torchvision.transforms as transforms
 import kornia
-import time
 
 
 # def video_is_less_than(path_to_video: str, seconds=10.) -> bool:
@@ -248,6 +247,26 @@ def face_enhancement(final_frames: List[np.ndarray], model) -> List[np.ndarray]:
     return enhanced_frames
 
 
+def face_enhancement_multi(final_frames: List[np.ndarray], model) -> List[np.ndarray]:
+    enhanced_frames_all = []
+    for i in range(len(final_frames)):
+        dataset = Frames(final_frames[i])
+        dataloader = DataLoader(dataset, batch_size=20, shuffle=False, num_workers=1, drop_last=False)
+
+        enhanced_frames = []
+
+        for iteration, data in tqdm(enumerate(dataloader)):
+            frames = data
+            data = {'image': frames, 'label': frames}
+            generated = model(data, mode='inference2')
+            generated = torch.clamp(generated*255, 0, 255)
+            generated = (generated).type(torch.uint8).permute(0,2,3,1).cpu().detach().numpy()
+            for i in range(len(generated)):
+                enhanced_frames.append(generated[i])
+        enhanced_frames_all.append(enhanced_frames)
+        
+    return enhanced_frames_all
+
 
 def get_final_video_multi(final_frames: List[np.ndarray],
                     crop_frames: List[np.ndarray],
@@ -262,7 +281,7 @@ def get_final_video_multi(final_frames: List[np.ndarray],
 
     out = cv2.VideoWriter(f"{OUT_VIDEO_NAME}", cv2.VideoWriter_fourcc(*'MP4V'), fps, (full_frames[0].shape[1], full_frames[0].shape[0]))
     size = (full_frames[0].shape[0], full_frames[0].shape[1])
-    params = None
+    params = [None for i in range(len(crop_frames))]
     
     for i in tqdm(range(len(full_frames))):
         if i == len(full_frames):
@@ -271,18 +290,15 @@ def get_final_video_multi(final_frames: List[np.ndarray],
             try:
                 swap = cv2.resize(final_frames[j][i], (224, 224))
                 
-                if len(crop_frames) > 1:
-                    if len(crop_frames[j][i]) == 0:
-                        continue
-                    landmarks = handler.get_without_detection_without_transform(crop_frames[j][i])
-                    mask = face_mask_old(crop_frames[j][i], landmarks)
+                if len(crop_frames[j][i]) == 0:
+                    continue
+                    
+                landmarks = handler.get_without_detection_without_transform(swap)
+                if params[j] == None:     
+                    landmarks_tgt = handler.get_without_detection_without_transform(crop_frames[j][i])
+                    mask, params[j] = face_mask_static(swap, landmarks, landmarks_tgt, params[j])
                 else:
-                    landmarks = handler.get_without_detection_without_transform(swap)
-                    if params == None:     
-                        landmarks_tgt = handler.get_without_detection_without_transform(crop_frames[j][i])
-                        mask, params = face_mask_static(swap, landmarks, landmarks_tgt, params)
-                    else:
-                        mask = face_mask_static(swap, landmarks, landmarks_tgt, params) 
+                    mask = face_mask_static(swap, landmarks, landmarks_tgt, params[j])    
                         
                 swap = torch.from_numpy(swap).cuda().permute(2,0,1).unsqueeze(0).type(torch.float32)
                 mask = torch.from_numpy(mask).cuda().unsqueeze(0).unsqueeze(0).type(torch.float32)

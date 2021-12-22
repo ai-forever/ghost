@@ -8,7 +8,6 @@ from tqdm import tqdm
 from .faceshifter_run import faceshifter_batch
 from .image_processing import crop_face, normalize_and_torch, normalize_and_torch_batch
 from .video_processing import read_video, crop_frames_and_get_transforms, resize_frames, crop_frames_and_get_transforms_multi
-import time
 
 
 # used
