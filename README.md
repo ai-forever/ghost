@@ -42,5 +42,6 @@
 We also provide the training code for face swap model as follows:
   1. Download [VGGFace2 Dataset](https://www.robots.ox.ac.uk/~vgg/data/vgg_face/).
   2. Crop and align faces with out detection model.
+  > python preprocess_vgg.py --path_to_dataset ./VggFace2/VGG-Face2/data/preprocess_train --save_path ./VggFace2-crop
   3. Start training. 
   > python train.py
