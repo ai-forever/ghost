@@ -27,7 +27,7 @@ def main(args):
                 cropped_image, _ = app.get(image, crop_size)
                 cv2.imwrite(os.path.join(dir_to_save, image_name), cropped_image[0])
             except:
-                print('error')
+                pass
         
     
 if __name__ == "__main__":
