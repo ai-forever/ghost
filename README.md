@@ -45,3 +45,8 @@ We also provide the training code for face swap model as follows:
   > python preprocess_vgg.py --path_to_dataset ./VggFace2/VGG-Face2/data/preprocess_train --save_path ./VggFace2-crop
   3. Start training. 
   > python train.py
+  
+### Tips:
+  1. For first epochs we suggest not to use eye detection loss
+  2. In case of finetuning model you can variate losses coefficients to make result look more like source identity, or vice versa, save features and attributes of target face
+  
