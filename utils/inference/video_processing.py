@@ -6,8 +6,8 @@ from typing import List, Tuple, Callable, Any
 from tqdm import tqdm
 import traceback
 
-from .masks import face_mask_static, face_mask_old #, face_mask
-from .image_processing import normalize_and_torch, normalize_and_torch_batch
+from .masks import face_mask_static
+from .image_processing import normalize_and_torch, normalize_and_torch_batch, crop_face
 
 import torch
 import torch.nn.functional as F
@@ -38,6 +38,7 @@ def add_audio_from_another_video(video_with_sound: str,
     os.system(f"ffmpeg -i {video_without_sound} -i ./examples/audio/{audio_name}.m4a {fast_cmd} {gpu_cmd}{video_without_sound[:-4]}_audio.mp4 -y")
     os.system(f"rm -rf ./examples/audio/{audio_name}.m4a")
     os.system(f"mv {video_without_sound[:-4]}_audio.mp4 {video_without_sound}")
+    
     
 # used
 def read_video(path_to_video: str) -> Tuple[List[np.ndarray], float]:
@@ -71,30 +72,26 @@ def read_video(path_to_video: str) -> Tuple[List[np.ndarray], float]:
     
     return full_frames, fps
 
+
+def get_target(full_frames: List[np.ndarray], 
+               app: Callable, 
+               crop_size: int):
+    i = 0
+    target = None
+    while target is None:
+        if i < len(full_frames):
+            try:
+                target = [crop_face(full_frames[i], app, crop_size)[0]]
+            except TypeError:
+                i += 1
+        else:
+            print("Video doesn't contain face!")
+            break
+    return target
+
+
 # used
-def crop_frames_and_get_transforms(full_frames: List[np.ndarray], 
-                app: Callable, 
-                crop_size: int) -> Tuple[List[Any], List[Any]]:
-    """
-    Crop faces from frames and get respective tranforms
-    """
-
-    crop_frames = []
-    tfm_array = []
-
-    for frame in tqdm(full_frames):
-        try:
-            frame_align_crop, tfm = app.get(frame, crop_size)
-            crop_frames.append(frame_align_crop[0])
-            tfm_array.append(tfm[0])
-        except TypeError:
-            crop_frames.append([])
-            tfm_array.append([])
-   
-    return crop_frames, tfm_array
-
-
-def crop_frames_and_get_transforms_multi(full_frames: List[np.ndarray],
+def crop_frames_and_get_transforms(full_frames: List[np.ndarray],
                 target_embeds: List,
                 app: Callable, 
                 netArc: Callable,
@@ -154,121 +151,9 @@ def resize_frames(crop_frames: List[np.ndarray], new_size=(256, 256)) -> Tuple[L
             
     return resized_frs, present
 
+
 # used
-def get_final_video_frame(final_frames: List[np.ndarray],
-                          crop_frames: List[np.ndarray],
-                          full_frames: List[np.ndarray],
-                          tfm_array: List[np.ndarray],
-                          OUT_VIDEO_NAME: str,
-                          fps: float, 
-                          handler) -> None:
-    """
-    Create final video from frames
-    """
-
-    out = cv2.VideoWriter(f"{OUT_VIDEO_NAME}", cv2.VideoWriter_fourcc(*'MP4V'), fps, (full_frames[0].shape[1], full_frames[0].shape[0]))
-
-    params = None 
-    size = (full_frames[0].shape[0], full_frames[0].shape[1])
-    
-    for i in tqdm(range(len(final_frames))):
-        if i == len(full_frames):
-            break  
-        try:
-            if len(crop_frames[i]) == 0:
-                out.write(full_frames[i])
-                params = None
-                continue
-                
-            swap = cv2.resize(final_frames[i], (224, 224))
-            landmarks = handler.get_without_detection_without_transform(swap)
-            if params == None:     
-                landmarks_tgt = handler.get_without_detection_without_transform(crop_frames[i])
-            
-            if params == None:
-                mask, params = face_mask_static(swap, landmarks, landmarks_tgt, params)
-            else:
-                mask = face_mask_static(swap, landmarks, landmarks_tgt, params)  
-            
-            swap = torch.from_numpy(swap).cuda().permute(2,0,1).unsqueeze(0).type(torch.float32)
-            mask = torch.from_numpy(mask).cuda().unsqueeze(0).unsqueeze(0).type(torch.float32)
-            frame = torch.from_numpy(full_frames[i]).cuda().permute(2,0,1).unsqueeze(0)
-            mat = torch.from_numpy(tfm_array[i]).cuda().unsqueeze(0).type(torch.float32)
-            
-            mat_rev = kornia.invert_affine_transform(mat)
-            swap_t = kornia.warp_affine(swap, mat_rev, size)
-            mask_t = kornia.warp_affine(mask, mat_rev, size)
-            final = (mask_t*swap_t + (1-mask_t)*frame).type(torch.uint8).squeeze().permute(1,2,0).cpu().detach().numpy()
-            out.write(final)
-            torch.cuda.empty_cache()
-        except Exception as e:
-            traceback.print_tb(e.__traceback__)
-            print(e)
-            print(i)
-            out.write(full_frames[i])
-
-    out.release()
-    
-
-class Frames(Dataset):
-    def __init__(self, frames_list):
-        self.frames_list = frames_list
-        
-        self.transforms = transforms.Compose([
-            #transforms.Resize((512, 512)),
-            transforms.ToTensor()
-        ])
-
-    def __getitem__(self, idx):        
-        #frame = self.frames_list[idx][:, :, ::-1]
-        frame = Image.fromarray(self.frames_list[idx])
-            
-        return self.transforms(frame)
-
-    def __len__(self):
-        return len(self.frames_list)
-    
-    
-def face_enhancement(final_frames: List[np.ndarray], model) -> List[np.ndarray]:
-    dataset = Frames(final_frames)
-    dataloader = DataLoader(dataset, batch_size=20, shuffle=False, num_workers=1, drop_last=False)
-    
-    enhanced_frames = []
-
-    for iteration, data in tqdm(enumerate(dataloader)):
-        frames = data
-        data = {'image': frames, 'label': frames}
-        generated = model(data, mode='inference2')
-        generated = torch.clamp(generated*255, 0, 255)
-        generated = (generated).type(torch.uint8).permute(0,2,3,1).cpu().detach().numpy()
-        for i in range(len(generated)):
-            enhanced_frames.append(generated[i])
-            
-    return enhanced_frames
-
-
-def face_enhancement_multi(final_frames: List[np.ndarray], model) -> List[np.ndarray]:
-    enhanced_frames_all = []
-    for i in range(len(final_frames)):
-        dataset = Frames(final_frames[i])
-        dataloader = DataLoader(dataset, batch_size=20, shuffle=False, num_workers=1, drop_last=False)
-
-        enhanced_frames = []
-
-        for iteration, data in tqdm(enumerate(dataloader)):
-            frames = data
-            data = {'image': frames, 'label': frames}
-            generated = model(data, mode='inference2')
-            generated = torch.clamp(generated*255, 0, 255)
-            generated = (generated).type(torch.uint8).permute(0,2,3,1).cpu().detach().numpy()
-            for i in range(len(generated)):
-                enhanced_frames.append(generated[i])
-        enhanced_frames_all.append(enhanced_frames)
-        
-    return enhanced_frames_all
-
-
-def get_final_video_multi(final_frames: List[np.ndarray],
+def get_final_video(final_frames: List[np.ndarray],
                     crop_frames: List[np.ndarray],
                     full_frames: List[np.ndarray],
                     tfm_array: List[np.ndarray],
@@ -314,10 +199,48 @@ def get_final_video_multi(final_frames: List[np.ndarray],
                 torch.cuda.empty_cache()
 
             except Exception as e:
-                traceback.print_tb(e.__traceback__)
-                print(e)
-                print(i)
+                pass
                 
         out.write(full_frames[i])
 
     out.release()
+    
+
+class Frames(Dataset):
+    def __init__(self, frames_list):
+        self.frames_list = frames_list
+        
+        self.transforms = transforms.Compose([
+            #transforms.Resize((512, 512)),
+            transforms.ToTensor()
+        ])
+
+    def __getitem__(self, idx):        
+        #frame = self.frames_list[idx][:, :, ::-1]
+        frame = Image.fromarray(self.frames_list[idx])
+            
+        return self.transforms(frame)
+
+    def __len__(self):
+        return len(self.frames_list)
+    
+    
+def face_enhancement(final_frames: List[np.ndarray], model) -> List[np.ndarray]:
+    enhanced_frames_all = []
+    for i in range(len(final_frames)):
+        dataset = Frames(final_frames[i])
+        dataloader = DataLoader(dataset, batch_size=20, shuffle=False, num_workers=1, drop_last=False)
+
+        enhanced_frames = []
+
+        for iteration, data in tqdm(enumerate(dataloader)):
+            frames = data
+            data = {'image': frames, 'label': frames}
+            generated = model(data, mode='inference2')
+            generated = torch.clamp(generated*255, 0, 255)
+            generated = (generated).type(torch.uint8).permute(0,2,3,1).cpu().detach().numpy()
+            for i in range(len(generated)):
+                enhanced_frames.append(generated[i])
+        enhanced_frames_all.append(enhanced_frames)
+        
+    return enhanced_frames_all
