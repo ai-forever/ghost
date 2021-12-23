@@ -1,6 +1,6 @@
 import base64
 from io import BytesIO
-from typing import Callable
+from typing import Callable, List
 
 import numpy as np
 import torch
@@ -54,7 +54,7 @@ def normalize_and_torch_batch(frames: np.ndarray) -> torch.tensor:
     """
     Normalize batch images and transform to torch
     """
-    batch_frames = torch.from_numpy(frames).cuda()
+    batch_frames = torch.from_numpy(frames.copy()).cuda()
     if batch_frames.max() > 1.:
         batch_frames = batch_frames/255.
     
@@ -64,26 +64,28 @@ def normalize_and_torch_batch(frames: np.ndarray) -> torch.tensor:
     return batch_frames
 
 
-def get_final_image(final_frame: np.ndarray,
-                    crop_frame: np.ndarray,
+def get_final_image(final_frames: List[np.ndarray],
+                    crop_frames: List[np.ndarray],
                     full_frame: np.ndarray,
-                    tfm_array: np.ndarray,
+                    tfm_arrays: List[np.ndarray],
                     handler) -> None:
     """
     Create final video from frames
     """
-    params = None
-    landmarks = handler.get_without_detection_without_transform(final_frame)     
-    landmarks_tgt = handler.get_without_detection_without_transform(crop_frame)
-                
-    mask, _ = face_mask_static(crop_frame, landmarks, landmarks_tgt, params)
-    mat_rev = cv2.invertAffineTransform(tfm_array)
+    final = full_frame.copy()
+    for i in range(len(final_frames)):
+        params = None
+        landmarks = handler.get_without_detection_without_transform(final_frames[i])     
+        landmarks_tgt = handler.get_without_detection_without_transform(crop_frames[i])
 
-    frame = cv2.resize(final_frame, (224, 224))
-    swap_t = cv2.warpAffine(frame, mat_rev, (full_frame.shape[1], full_frame.shape[0]), borderMode=cv2.BORDER_REPLICATE)
-    mask_t = cv2.warpAffine(mask, mat_rev, (full_frame.shape[1], full_frame.shape[0]))
-    mask_t = np.expand_dims(mask_t, 2)
+        mask, _ = face_mask_static(crop_frames[i], landmarks, landmarks_tgt, params)
+        mat_rev = cv2.invertAffineTransform(tfm_arrays[i])
 
-    final = mask_t*swap_t + (1-mask_t)*full_frame
+        frame = cv2.resize(final_frames[i], (224, 224))
+        swap_t = cv2.warpAffine(frame, mat_rev, (full_frame.shape[1], full_frame.shape[0]), borderMode=cv2.BORDER_REPLICATE)
+        mask_t = cv2.warpAffine(mask, mat_rev, (full_frame.shape[1], full_frame.shape[0]))
+        mask_t = np.expand_dims(mask_t, 2)
+
+        final = mask_t*swap_t + (1-mask_t)*final
     final = np.array(final, dtype='uint8')
     return final

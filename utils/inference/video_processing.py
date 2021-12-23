@@ -167,6 +167,7 @@ def get_final_video(final_frames: List[np.ndarray],
     out = cv2.VideoWriter(f"{OUT_VIDEO_NAME}", cv2.VideoWriter_fourcc(*'MP4V'), fps, (full_frames[0].shape[1], full_frames[0].shape[0]))
     size = (full_frames[0].shape[0], full_frames[0].shape[1])
     params = [None for i in range(len(crop_frames))]
+    result_frames = full_frames.copy()
     
     for i in tqdm(range(len(full_frames))):
         if i == len(full_frames):
@@ -195,13 +196,13 @@ def get_final_video(final_frames: List[np.ndarray],
                 mask_t = kornia.warp_affine(mask, mat_rev, size)
                 final = (mask_t*swap_t + (1-mask_t)*full_frame).type(torch.uint8).squeeze().permute(1,2,0).cpu().detach().numpy()
                 
-                full_frames[i] = final
+                result_frames[i] = final
                 torch.cuda.empty_cache()
 
             except Exception as e:
                 pass
                 
-        out.write(full_frames[i])
+        out.write(result_frames[i])
 
     out.release()
     

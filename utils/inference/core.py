@@ -15,8 +15,7 @@ def transform_target_to_torch(resized_frs: np.ndarray, half=True) -> torch.tenso
     """
     Transform target, so it could be used by model
     """
-#     target_batch_rs = torch.tensor(resized_frs.copy()).cuda()
-    target_batch_rs = torch.from_numpy(resized_frs).cuda()
+    target_batch_rs = torch.from_numpy(resized_frs.copy()).cuda()
     target_batch_rs = target_batch_rs[:, :, :, [2,1,0]]/255.
         
     if half:
@@ -26,6 +25,7 @@ def transform_target_to_torch(resized_frs: np.ndarray, half=True) -> torch.tenso
     target_batch_rs = target_batch_rs.permute(0, 3, 1, 2)
     
     return target_batch_rs
+
 
 # used
 def model_inference(full_frames: List[np.ndarray],
