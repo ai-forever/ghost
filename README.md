@@ -1,8 +1,5 @@
 # sber-swap
 
-## Usage
-1. Colab Demo
-
 ## Results 
 ![](/examples/images/example1.png)
 
@@ -33,6 +30,13 @@
   ```bash
   sh download_models.sh
   ```
+## Usage
+  1. Colab Demo
+  2. Face Swap On Video
+  > python inference.py 
+  3. Face Swap On Image
+  > python inference.py --target_path examples/images/beckham.jpg --image_to_image True
+  
 ## Training
   
 We also provide the training code for face swap model as follows:
