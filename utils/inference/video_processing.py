@@ -228,10 +228,14 @@ class Frames(Dataset):
     
     
 def face_enhancement(final_frames: List[np.ndarray], model) -> List[np.ndarray]:
-    dataset = Frames(final_frames)
-    dataloader = DataLoader(dataset, batch_size=20, shuffle=False, num_workers=1, drop_last=False)
+    enhanced_frames = final_frames.copy()
     
-    enhanced_frames = []
+    face_idx = [i for i, x in enumerate(final_frames) if x != []]
+    face_frames = [x for i, x in enumerate(final_frames) if x != []]
+    ff_i = 0
+    
+    dataset = Frames(face_frames)
+    dataloader = DataLoader(dataset, batch_size=20, shuffle=False, num_workers=1, drop_last=False)
 
     for iteration, data in tqdm(enumerate(dataloader)):
         frames = data
@@ -239,8 +243,9 @@ def face_enhancement(final_frames: List[np.ndarray], model) -> List[np.ndarray]:
         generated = model(data, mode='inference2')
         generated = torch.clamp(generated*255, 0, 255)
         generated = (generated).type(torch.uint8).permute(0,2,3,1).cpu().detach().numpy()
-        for i in range(len(generated)):
-            enhanced_frames.append(generated[i])
+        for generated_frame in generated:
+            enhanced_frames[face_idx[ff_i]] = generated_frame[:,:,::-1]
+            ff_i+=1
             
     return enhanced_frames
 
