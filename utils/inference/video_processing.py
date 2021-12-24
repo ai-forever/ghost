@@ -213,13 +213,11 @@ class Frames(Dataset):
         self.frames_list = frames_list
         
         self.transforms = transforms.Compose([
-            #transforms.Resize((512, 512)),
             transforms.ToTensor()
         ])
 
     def __getitem__(self, idx):        
-        #frame = self.frames_list[idx][:, :, ::-1]
-        frame = Image.fromarray(self.frames_list[idx])
+        frame = Image.fromarray(self.frames_list[idx][:,:,::-1])
             
         return self.transforms(frame)
 
