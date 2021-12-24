@@ -10,7 +10,6 @@ from .image_processing import crop_face, normalize_and_torch, normalize_and_torc
 from .video_processing import read_video, crop_frames_and_get_transforms, resize_frames
 
 
-# used
 def transform_target_to_torch(resized_frs: np.ndarray, half=True) -> torch.tensor:
     """
     Transform target, so it could be used by model
@@ -27,13 +26,14 @@ def transform_target_to_torch(resized_frs: np.ndarray, half=True) -> torch.tenso
     return target_batch_rs
 
 
-# used
 def model_inference(full_frames: List[np.ndarray],
                     source: List,
                     target: List, 
                     netArc: Callable,
                     G: Callable,
-                    app: Callable, 
+                    app: Callable,
+                    set_target: bool,
+                    similarity_th=0.15,
                     crop_size=224,
                     BS=60,
                     half=True) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
@@ -45,7 +45,7 @@ def model_inference(full_frames: List[np.ndarray],
     target_embeds = netArc(F.interpolate(target_norm, scale_factor=0.5, mode='bilinear', align_corners=True))
     
     # Get the cropped faces from original frames and transformations to get those crops
-    crop_frames_list, tfm_array_list = crop_frames_and_get_transforms(full_frames, target_embeds, app, netArc, crop_size, similarity_th=0.15)
+    crop_frames_list, tfm_array_list = crop_frames_and_get_transforms(full_frames, target_embeds, app, netArc, crop_size, set_target, similarity_th=similarity_th)
     
     # Normalize source images and transform to torch and get Arcface embeddings
     source_embeds = []

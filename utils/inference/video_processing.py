@@ -23,7 +23,7 @@ import kornia
     
 #     return frames < fps*seconds
 
-# used
+
 def add_audio_from_another_video(video_with_sound: str, 
                                  video_without_sound: str, 
                                  audio_name: str, 
@@ -40,7 +40,6 @@ def add_audio_from_another_video(video_with_sound: str,
     os.system(f"mv {video_without_sound[:-4]}_audio.mp4 {video_without_sound}")
     
     
-# used
 def read_video(path_to_video: str) -> Tuple[List[np.ndarray], float]:
     """
     Read video by frames using its path
@@ -90,13 +89,13 @@ def get_target(full_frames: List[np.ndarray],
     return target
 
 
-# used
 def crop_frames_and_get_transforms(full_frames: List[np.ndarray],
                 target_embeds: List,
                 app: Callable, 
                 netArc: Callable,
                 crop_size: int,
-                similarity_th=0.4) -> Tuple[List[Any], List[Any]]:
+                set_target: bool,
+                similarity_th: float) -> Tuple[List[Any], List[Any]]:
     """
     Crop faces from frames and get respective tranforms
     """
@@ -108,12 +107,12 @@ def crop_frames_and_get_transforms(full_frames: List[np.ndarray],
     for frame in tqdm(full_frames):
         try:
             faces, tfms = app.get(frame, crop_size)
-            if len(faces) > 1:
+            if len(faces) > 1 or set_target:
                 face_norm = normalize_and_torch_batch(np.array(faces))
                 face_norm = F.interpolate(face_norm, scale_factor=0.5, mode='bilinear', align_corners=True)
                 face_embeds = netArc(face_norm)
                 face_embeds = F.normalize(face_embeds)
-                
+
                 similarity = face_embeds@target_embeds.T
                 best_idxs = similarity.argmax(0).detach().cpu().numpy()
                 for idx, best_idx in enumerate(best_idxs):
@@ -134,7 +133,6 @@ def crop_frames_and_get_transforms(full_frames: List[np.ndarray],
     return crop_frames, tfm_array
 
 
-# used
 def resize_frames(crop_frames: List[np.ndarray], new_size=(256, 256)) -> Tuple[List[np.ndarray], np.ndarray]:
     """
     Resize frames to new size
@@ -152,7 +150,6 @@ def resize_frames(crop_frames: List[np.ndarray], new_size=(256, 256)) -> Tuple[L
     return resized_frs, present
 
 
-# used
 def get_final_video(final_frames: List[np.ndarray],
                     crop_frames: List[np.ndarray],
                     full_frames: List[np.ndarray],
@@ -177,6 +174,7 @@ def get_final_video(final_frames: List[np.ndarray],
                 swap = cv2.resize(final_frames[j][i], (224, 224))
                 
                 if len(crop_frames[j][i]) == 0:
+                    params[j] = None
                     continue
                     
                 landmarks = handler.get_without_detection_without_transform(swap)
@@ -212,27 +210,28 @@ class Frames(Dataset):
         self.frames_list = frames_list
         
         self.transforms = transforms.Compose([
-            #transforms.Resize((512, 512)),
             transforms.ToTensor()
         ])
 
     def __getitem__(self, idx):        
-        #frame = self.frames_list[idx][:, :, ::-1]
-        frame = Image.fromarray(self.frames_list[idx])
+        frame = Image.fromarray(self.frames_list[idx][:,:,::-1])
             
         return self.transforms(frame)
 
     def __len__(self):
         return len(self.frames_list)
     
-    
+
 def face_enhancement(final_frames: List[np.ndarray], model) -> List[np.ndarray]:
     enhanced_frames_all = []
     for i in range(len(final_frames)):
-        dataset = Frames(final_frames[i])
-        dataloader = DataLoader(dataset, batch_size=20, shuffle=False, num_workers=1, drop_last=False)
+        enhanced_frames = final_frames[i].copy()
+        face_idx = [i for i, x in enumerate(final_frames[i]) if x != []]
+        face_frames = [x for i, x in enumerate(final_frames[i]) if x != []]
+        ff_i = 0
 
-        enhanced_frames = []
+        dataset = Frames(face_frames)
+        dataloader = DataLoader(dataset, batch_size=20, shuffle=False, num_workers=1, drop_last=False)
 
         for iteration, data in tqdm(enumerate(dataloader)):
             frames = data
@@ -240,8 +239,9 @@ def face_enhancement(final_frames: List[np.ndarray], model) -> List[np.ndarray]:
             generated = model(data, mode='inference2')
             generated = torch.clamp(generated*255, 0, 255)
             generated = (generated).type(torch.uint8).permute(0,2,3,1).cpu().detach().numpy()
-            for i in range(len(generated)):
-                enhanced_frames.append(generated[i])
+            for generated_frame in generated:
+                enhanced_frames[face_idx[ff_i]] = generated_frame[:,:,::-1]
+                ff_i+=1
         enhanced_frames_all.append(enhanced_frames)
         
     return enhanced_frames_all
