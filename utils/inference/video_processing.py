@@ -188,7 +188,7 @@ def get_final_video(final_frames: List[np.ndarray],
                         
                 swap = torch.from_numpy(swap).cuda().permute(2,0,1).unsqueeze(0).type(torch.float32)
                 mask = torch.from_numpy(mask).cuda().unsqueeze(0).unsqueeze(0).type(torch.float32)
-                full_frame = torch.from_numpy(full_frames[i]).cuda().permute(2,0,1).unsqueeze(0)
+                full_frame = torch.from_numpy(result_frames[i]).cuda().permute(2,0,1).unsqueeze(0)
                 mat = torch.from_numpy(tfm_array[j][i]).cuda().unsqueeze(0).type(torch.float32)
                 
                 mat_rev = kornia.invert_affine_transform(mat)
