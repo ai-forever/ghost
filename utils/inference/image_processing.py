@@ -83,4 +83,3 @@ def show_images(target, swap):
     ax2.axis('off')
     ax1.imshow(target[:,:,::-1])
     ax2.imshow(swap[:,:,::-1])
-    

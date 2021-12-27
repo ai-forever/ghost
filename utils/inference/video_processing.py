@@ -16,14 +16,6 @@ import torchvision.transforms as transforms
 import kornia
 
 
-# def video_is_less_than(path_to_video: str, seconds=10.) -> bool:
-    
-#     cap = cv2.VideoCapture(path_to_video)
-#     fps, frames = cap.get(cv2.CAP_PROP_FPS), cap.get(cv2.CAP_PROP_FRAME_COUNT)
-    
-#     return frames < fps*seconds
-
-
 def add_audio_from_another_video(video_with_sound: str, 
                                  video_without_sound: str, 
                                  audio_name: str, 
@@ -220,7 +212,7 @@ class Frames(Dataset):
 
     def __len__(self):
         return len(self.frames_list)
-    
+
 
 def face_enhancement(final_frames: List[np.ndarray], model) -> List[np.ndarray]:
     enhanced_frames_all = []
