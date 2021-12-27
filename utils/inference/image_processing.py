@@ -73,13 +73,16 @@ def get_final_image(final_frames: List[np.ndarray],
     return final
 
 
-def show_images(target, swap):
-    fig = plt.figure(figsize=(15, 7))
-    ax1 = fig.add_subplot(1, 2, 1) 
-    plt.title('Target Image', fontsize=15)
-    ax1.axis('off')
-    ax2 = fig.add_subplot(1, 2, 2)
-    plt.title('Swapped Image', fontsize=15)
-    ax2.axis('off')
-    ax1.imshow(target[:,:,::-1])
-    ax2.imshow(swap[:,:,::-1])
+def show_images(images: List[np.ndarray], 
+                titles=None, 
+                figsize=(20, 5), 
+                fontsize=15):
+    if titles:
+        assert len(titles) == len(images), "Amount of images should be the same as the amount of titles"
+    
+    fig, axes = plt.subplots(1, len(images), figsize=figsize)
+    for idx, (ax, image) in enumerate(zip(axes, images)):
+        ax.imshow(image[:, :, ::-1])
+        if titles:
+            ax.set_title(titles[idx], fontsize=fontsize)
+        ax.axis("off")
