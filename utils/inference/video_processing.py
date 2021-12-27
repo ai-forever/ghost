@@ -218,8 +218,8 @@ def face_enhancement(final_frames: List[np.ndarray], model) -> List[np.ndarray]:
     enhanced_frames_all = []
     for i in range(len(final_frames)):
         enhanced_frames = final_frames[i].copy()
-        face_idx = [i for i, x in enumerate(final_frames[i]) if x != []]
-        face_frames = [x for i, x in enumerate(final_frames[i]) if x != []]
+        face_idx = [i for i, x in enumerate(final_frames[i]) if not isinstance(x, list)]
+        face_frames = [x for i, x in enumerate(final_frames[i]) if not isinstance(x, list)]
         ff_i = 0
 
         dataset = Frames(face_frames)
