@@ -109,7 +109,10 @@ def train_one_epoch(G: 'generator model',
                 Yt_eyes_img = paint_eyes(Y, Y_eyes)
                 images.extend([Xt_eyes_img, Yt_eyes_img])
             image = make_image_list(images)
-            wandb.log({"gen_images":wandb.Image(image, caption=f"{epoch:03}" + '_' + f"{iteration:06}")})
+            if args.use_wandb:
+                wandb.log({"gen_images":wandb.Image(image, caption=f"{epoch:03}" + '_' + f"{iteration:06}")})
+            else:
+                cv2.imwrite('./images/generated_image.jpg', image[:,:,::-1])
         
         if iteration % 10 == 0:
             print(f'epoch: {epoch}    {iteration} / {len(dataloader)}')
@@ -121,14 +124,15 @@ def train_one_epoch(G: 'generator model',
             if args.scheduler:
                 print(f'scheduler_G lr: {scheduler_G.get_last_lr()} scheduler_D lr: {scheduler_D.get_last_lr()}')
         
-        if args.eye_detector_loss:
-            wandb.log({"loss_eyes": L_l2_eyes.item()}, commit=False)
-        wandb.log({"loss_id": L_id.item(),
-                   "lossD": lossD.item(),
-                   "lossG": lossG.item(),
-                   "loss_adv": L_adv.item(),
-                   "loss_attr": L_attr.item(),
-                   "loss_rec": L_rec.item()})
+        if args.use_wandb:
+            if args.eye_detector_loss:
+                wandb.log({"loss_eyes": L_l2_eyes.item()}, commit=False)
+            wandb.log({"loss_id": L_id.item(),
+                       "lossD": lossD.item(),
+                       "lossG": lossG.item(),
+                       "loss_adv": L_adv.item(),
+                       "loss_attr": L_attr.item(),
+                       "loss_rec": L_rec.item()})
         
         if iteration % 5000 == 0:
             torch.save(G.state_dict(), f'./saved_models_{args.run_name}/G_latest.pth')
@@ -137,7 +141,7 @@ def train_one_epoch(G: 'generator model',
             torch.save(G.state_dict(), f'./current_models_{args.run_name}/G_' + str(epoch)+ '_' + f"{iteration:06}" + '.pth')
             torch.save(D.state_dict(), f'./current_models_{args.run_name}/D_' + str(epoch)+ '_' + f"{iteration:06}" + '.pth')
 
-        if iteration % 250 == 0:
+        if (iteration % 250 == 0) and (args.use_wandb):
             ### Посмотрим как выглядит свап на трех конкретных фотках, чтобы проследить динамику
             G.eval()
 
@@ -273,9 +277,10 @@ if __name__ == "__main__":
     parser.add_argument('--scheduler_gamma', default=0.2, type=int, help='It is value, which shows how many times to decrease LR')
     parser.add_argument('--eye_detector_loss', default=False, type=bool, help='If True eye loss with using AdaptiveWingLoss detector is applied to generator')
     # info about this run
+    parser.add_argument('--use_wandb', default=False, type=bool, help='Use wandb to track your experiments or not')
     parser.add_argument('--run_name', required=True, type=str, help='Name of this run. Used to create folders where to save the weights.')
-    parser.add_argument('--wandb_project', default='aei-net-eyes', type=str)
-    parser.add_argument('--wandb_entity', default='sber-ai-faceswap', type=str)
+    parser.add_argument('--wandb_project', default='your-project-name', type=str)
+    parser.add_argument('--wandb_entity', default='your-login', type=str)
     # training params you probably don't want to change
     parser.add_argument('--batch_size', default=16, type=int)
     parser.add_argument('--lr_G', default=4e-4, type=float)
@@ -289,32 +294,35 @@ if __name__ == "__main__":
     
     if args.vgg==False and args.same_identity==True:
         raise ValueError("Sorry, you can't use some other dataset than VGG2 Faces with param same_identity=True")
-        
-    wandb.init(project=args.wandb_project, entity=args.wandb_entity, settings=wandb.Settings(start_method='fork'))
+    
+    if args.use_wandb==True:
+        wandb.init(project=args.wandb_project, entity=args.wandb_entity, settings=wandb.Settings(start_method='fork'))
 
-    config = wandb.config
-    config.dataset_path = args.dataset_path
-    config.weight_adv = args.weight_adv
-    config.weight_attr = args.weight_attr
-    config.weight_id = args.weight_id
-    config.weight_rec = args.weight_rec
-    config.weight_eyes = args.weight_eyes
-    config.same_person = args.same_person
-    config.Vgg2Face = args.vgg
-    config.same_identity = args.same_identity
-    config.diff_eq_same = args.diff_eq_same
-    config.discr_force = args.discr_force
-    config.scheduler = args.scheduler
-    config.scheduler_step = args.scheduler_step
-    config.scheduler_gamma = args.scheduler_gamma
-    config.eye_detector_loss = args.eye_detector_loss
-    config.pretrained = args.pretrained
-    config.run_name = args.run_name
-    config.G_path = args.G_path
-    config.D_path = args.D_path
-    config.batch_size = args.batch_size
-    config.lr_G = args.lr_G
-    config.lr_D = args.lr_D
+        config = wandb.config
+        config.dataset_path = args.dataset_path
+        config.weight_adv = args.weight_adv
+        config.weight_attr = args.weight_attr
+        config.weight_id = args.weight_id
+        config.weight_rec = args.weight_rec
+        config.weight_eyes = args.weight_eyes
+        config.same_person = args.same_person
+        config.Vgg2Face = args.vgg
+        config.same_identity = args.same_identity
+        config.diff_eq_same = args.diff_eq_same
+        config.discr_force = args.discr_force
+        config.scheduler = args.scheduler
+        config.scheduler_step = args.scheduler_step
+        config.scheduler_gamma = args.scheduler_gamma
+        config.eye_detector_loss = args.eye_detector_loss
+        config.pretrained = args.pretrained
+        config.run_name = args.run_name
+        config.G_path = args.G_path
+        config.D_path = args.D_path
+        config.batch_size = args.batch_size
+        config.lr_G = args.lr_G
+        config.lr_D = args.lr_D
+    elif not os.path.exists('./images'):
+        os.mkdir('./images')
     
     # Создаем папки, чтобы было куда сохранять последние веса моделей, а также веса с каждой эпохи
     if not os.path.exists(f'./saved_models_{args.run_name}'):
