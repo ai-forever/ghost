@@ -4,7 +4,7 @@ import sys
 import argparse
 import time
 import cv2
-import wandb # comment this if you dont want use wandb
+import wandb
 from PIL import Image
 import os
 
@@ -277,10 +277,10 @@ if __name__ == "__main__":
     parser.add_argument('--scheduler_gamma', default=0.2, type=int, help='It is value, which shows how many times to decrease LR')
     parser.add_argument('--eye_detector_loss', default=False, type=bool, help='If True eye loss with using AdaptiveWingLoss detector is applied to generator')
     # info about this run
-    parser.add_argument('--use_wandb', default=False, type=bool, help='Using wandb to track your experiments or not')
-    parser.add_argument('--run_name', default='run1', type=str, help='Name of this run. Used to create folders where to save the weights.')
-    parser.add_argument('--wandb_project', default='aei-net-eyes', type=str)
-    parser.add_argument('--wandb_entity', default='sber-ai-faceswap', type=str)
+    parser.add_argument('--use_wandb', default=False, type=bool, help='Use wandb to track your experiments or not')
+    parser.add_argument('--run_name', required=True, type=str, help='Name of this run. Used to create folders where to save the weights.')
+    parser.add_argument('--wandb_project', default='your-project-name', type=str)
+    parser.add_argument('--wandb_entity', default='your-login', type=str)
     # training params you probably don't want to change
     parser.add_argument('--batch_size', default=16, type=int)
     parser.add_argument('--lr_G', default=4e-4, type=float)
