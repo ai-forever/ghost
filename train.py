@@ -256,16 +256,16 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     
     # dataset params
-    parser.add_argument('--dataset_path', default='/home/jovyan/VggFace2-crop/', help='Path to the dataset. If not VGG2 dataset is used, param --vgg should be set False')
+    parser.add_argument('--dataset_path', default='/VggFace2-crop/', help='Path to the dataset. If not VGG2 dataset is used, param --vgg should be set False')
     parser.add_argument('--G_path', default='./saved_models/G.pth', help='Path to pretrained weights for G. Only used if pretrained=True')
     parser.add_argument('--D_path', default='./saved_models/D.pth', help='Path to pretrained weights for D. Only used if pretrained=True')
-    parser.add_argument('--vgg', default=True, type=bool)
+    parser.add_argument('--vgg', default=True, type=bool, help='When using VGG2 dataset (or any other dataset with several photos for one identity)')
     # weights for loss
-    parser.add_argument('--weight_adv', default=1, type=float)
-    parser.add_argument('--weight_attr', default=10, type=float)
-    parser.add_argument('--weight_id', default=20, type=float)
-    parser.add_argument('--weight_rec', default=10, type=float)
-    parser.add_argument('--weight_eyes', default=0., type=float)
+    parser.add_argument('--weight_adv', default=1, type=float, help='Adversarial Loss weight')
+    parser.add_argument('--weight_attr', default=10, type=float, help='Attributes weight')
+    parser.add_argument('--weight_id', default=20, type=float, help='Identity Loss weight')
+    parser.add_argument('--weight_rec', default=10, type=float, help='Reconstruction Loss weight')
+    parser.add_argument('--weight_eyes', default=0., type=float, help='Eyes Loss weight')
     # training params you may want to change
     parser.add_argument('--same_person', default=0.2, type=float, help='Probability of using same person identity during training')
     parser.add_argument('--same_identity', default=True, type=bool, help='Using simswap approach, when source_id = target_id. Only possible with vgg=True')
