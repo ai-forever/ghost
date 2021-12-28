@@ -33,9 +33,21 @@
 ## Usage
   1. Colab Demo or you can use jupyter notebook [SberSwapInference.ipynb](SberSwapInference.ipynb) locally
   2. Face Swap On Video
-  > python inference.py 
+  
+  Swap to one specific person in the video. You must set face from the target video (for example, crop from any frame).
+  ```bash
+  python inference.py --source_paths {PATH_TO_IMAGE} --target_faces_paths {PATH_TO_IMAGE} --target_video {PATH_TO_VIDEO}
+  ```
+  Swap to many person in the video. You must set multiple faces for source and the corresponding multiple faces from the target video.
+  ```bash
+  python inference.py --source_paths {PATH_TO_IMAGE PATH_TO_IMAGE ...} --target_faces_paths {PATH_TO_IMAGE PATH_TO_IMAGE ...} --target_video {PATH_TO_VIDEO}
+  ```
   3. Face Swap On Image
-  > python inference.py --target_path {PATH_TO_IMAGE} --image_to_image True
+  
+  You may set the target face, and then source will be swapped on this person, or you may skip this parameter, and then source will be swapped on any person in the image.
+  ```bash
+  python inference.py --target_path {PATH_TO_IMAGE} --image_to_image True
+  ```
   
 ## Training
   
