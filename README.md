@@ -1,4 +1,4 @@
-# sber-swap
+# SberSwap
 
 ## Results 
 ![](/examples/images/example1.png)
