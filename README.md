@@ -31,7 +31,7 @@
   sh download_models.sh
   ```
 ## Usage
-  1. Colab Demo or you can use jupyter notebook [SberSwapInference.ipynb](SberSwapInference.ipynb) locally
+  1. Colab Demo <a href="https://colab.research.google.com/drive/1B-2JoRxZZwrY2eK_E7TB5VYcae3EjQ1f"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="google colab logo"></a> or you can use jupyter notebook [SberSwapInference.ipynb](SberSwapInference.ipynb) locally
   2. Face Swap On Video
   
   Swap to one specific person in the video. You must set face from the target video (for example, crop from any frame).
