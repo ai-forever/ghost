@@ -42,17 +42,6 @@ def torch2image(torch_image: torch.tensor) -> np.ndarray:
         return np_image
 
 
-def make_image(Xs: torch.tensor, Xt: torch.tensor, Y: torch.tensor) -> np.ndarray:
-    assert Xs.shape == Xt.shape == Y.shape, "Xs, Xt and Y should have the same shapes"
-    assert 3 <= Xs.dim() <= 4, "Xs, Xt and Y should have 3 or 4 dimentions"
-    
-    Xs = torch2image(Xs)
-    Xt = torch2image(Xt)
-    Y = torch2image(Y)
-    
-    return np.concatenate((Xs, Xt, Y), axis=0)
-
-
 def make_image_list(images) -> np.ndarray:    
     np_images = []
     
