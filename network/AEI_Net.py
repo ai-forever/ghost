@@ -84,17 +84,17 @@ class MLAttrEncoder(nn.Module):
 
 
 class AADGenerator(nn.Module):
-    def __init__(self, c_id=256):
+    def __init__(self, c_id=256, num_blocks=2):
         super(AADGenerator, self).__init__()
         self.up1 = nn.ConvTranspose2d(c_id, 1024, kernel_size=2, stride=1, padding=0)
-        self.AADBlk1 = AAD_ResBlk(1024, 1024, 1024, c_id)
-        self.AADBlk2 = AAD_ResBlk(1024, 1024, 2048, c_id)
-        self.AADBlk3 = AAD_ResBlk(1024, 1024, 1024, c_id)
-        self.AADBlk4 = AAD_ResBlk(1024, 512, 512, c_id)
-        self.AADBlk5 = AAD_ResBlk(512, 256, 256, c_id)
-        self.AADBlk6 = AAD_ResBlk(256, 128, 128, c_id)
-        self.AADBlk7 = AAD_ResBlk(128, 64, 64, c_id)
-        self.AADBlk8 = AAD_ResBlk(64, 3, 64, c_id)
+        self.AADBlk1 = AAD_ResBlk(1024, 1024, 1024, c_id, num_blocks)
+        self.AADBlk2 = AAD_ResBlk(1024, 1024, 2048, c_id, num_blocks)
+        self.AADBlk3 = AAD_ResBlk(1024, 1024, 1024, c_id, num_blocks)
+        self.AADBlk4 = AAD_ResBlk(1024, 512, 512, c_id, num_blocks)
+        self.AADBlk5 = AAD_ResBlk(512, 256, 256, c_id, num_blocks)
+        self.AADBlk6 = AAD_ResBlk(256, 128, 128, c_id, num_blocks)
+        self.AADBlk7 = AAD_ResBlk(128, 64, 64, c_id, num_blocks)
+        self.AADBlk8 = AAD_ResBlk(64, 3, 64, c_id, num_blocks)
 
         self.apply(weight_init)
 
@@ -112,10 +112,10 @@ class AADGenerator(nn.Module):
 
 
 class AEI_Net(nn.Module):
-    def __init__(self, c_id=256):
+    def __init__(self, c_id=256, num_blocks=2):
         super(AEI_Net, self).__init__()
         self.encoder = MLAttrEncoder()
-        self.generator = AADGenerator(c_id)
+        self.generator = AADGenerator(c_id, num_blocks)
 
     def forward(self, Xt, z_id):
         attr = self.encoder(Xt)

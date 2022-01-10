@@ -3,7 +3,7 @@ import torch.nn as nn
 
 
 class AADLayer(nn.Module):
-    def __init__(self, c_x, attr_c, c_id=256):
+    def __init__(self, c_x, attr_c, c_id):
         super(AADLayer, self).__init__()
         self.attr_c = attr_c
         self.c_id = c_id
@@ -37,41 +37,47 @@ class AADLayer(nn.Module):
         out = (torch.ones_like(M).to(M.device) - M) * A + M * I
         return out
 
-
+    
+class AddBlocksSequential(nn.Sequential):
+    def forward(self, *inputs):
+        h, z_attr, z_id = inputs
+        for i, module in enumerate(self._modules.values()):
+            if i%3 == 0 and i > 0:
+                inputs = (inputs, z_attr, z_id)
+            if type(inputs) == tuple:
+                inputs = module(*inputs)
+            else:
+                inputs = module(inputs)
+        return inputs
+        
+        
 class AAD_ResBlk(nn.Module):
-    def __init__(self, cin, cout, c_attr, c_id=256):
+    def __init__(self, cin, cout, c_attr, c_id, num_blocks):
         super(AAD_ResBlk, self).__init__()
         self.cin = cin
         self.cout = cout
-
-        self.AAD1 = AADLayer(cin, c_attr, c_id)
-        self.conv1 = nn.Conv2d(cin, cin, kernel_size=3, stride=1, padding=1, bias=False)
-        self.relu1 = nn.ReLU(inplace=True)
-
-        self.AAD2 = AADLayer(cin, c_attr, c_id)
-        self.conv2 = nn.Conv2d(cin, cout, kernel_size=3, stride=1, padding=1, bias=False)
-        self.relu2 = nn.ReLU(inplace=True)
-
+        
+        add_blocks = []
+        for i in range(num_blocks):
+            out = cin if i < (num_blocks-1) else cout
+            add_blocks.extend([AADLayer(cin, c_attr, c_id),
+                               nn.ReLU(inplace=True),
+                               nn.Conv2d(cin, out, kernel_size=3, stride=1, padding=1, bias=False)
+                              ])
+        self.add_blocks = AddBlocksSequential(*add_blocks)
+        
         if cin != cout:
-            self.AAD3 = AADLayer(cin, c_attr, c_id)
-            self.conv3 = nn.Conv2d(cin, cout, kernel_size=3, stride=1, padding=1, bias=False)
-            self.relu3 = nn.ReLU(inplace=True)
+            last_add_block = [AADLayer(cin, c_attr, c_id), 
+                             nn.ReLU(inplace=True), 
+                             nn.Conv2d(cin, cout, kernel_size=3, stride=1, padding=1, bias=False)]
+            self.last_add_block = AddBlocksSequential(*last_add_block)
+            
 
     def forward(self, h, z_attr, z_id):
-        x = self.AAD1(h, z_attr, z_id)
-        x = self.relu1(x)
-        x = self.conv1(x)
-
-        x = self.AAD2(x,z_attr, z_id)
-        x = self.relu2(x)
-        x = self.conv2(x)
-
+        x =  self.add_blocks(h, z_attr, z_id)
         if self.cin != self.cout:
-            h = self.AAD3(h, z_attr, z_id)
-            h = self.relu3(h)
-            h = self.conv3(h)
+            h = self.last_add_block(h, z_attr, z_id)
         x = x + h
-        
         return x
 
 
