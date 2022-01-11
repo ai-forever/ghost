@@ -2,8 +2,6 @@ import os
 import sys
 import cv2
 import argparse
-import torch
-import numpy as np
 from insightface_func.face_detect_crop_single import Face_detect_crop
 from pathlib import Path
 from tqdm import tqdm
