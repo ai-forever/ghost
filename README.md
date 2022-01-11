@@ -54,13 +54,18 @@
 We also provide the training code for face swap model as follows:
   1. Download [VGGFace2 Dataset](https://www.robots.ox.ac.uk/~vgg/data/vgg_face/).
   2. Crop and align faces with out detection model.
-  > python preprocess_vgg.py --path_to_dataset ./VggFace2/VGG-Face2/data/preprocess_train --save_path ./VggFace2-crop
+  ```bash
+  python preprocess_vgg.py --path_to_dataset {PATH_TO_DATASET} --save_path {SAVE_PATH}
+  ```
   3. Start training. 
-  > python train.py --run_name {YOUR_RUN_NAME}
-
-We provide a lot of different options for the training. More info about each option you can find in `train.py` file. If you would like to use wandb logging of the experiments, you should login to wandb first -- `wandb login`.
+  ```bash
+  python train.py --run_name {YOUR_RUN_NAME}
+  ```
+We provide a lot of different options for the training. More info about each option you can find in `train.py` file. If you would like to use wandb logging of the experiments, you should login to wandb first  `--wandb login`.
   
 ### Tips:
-  1. For first epochs we suggest not to use eye detection loss if you train from scratch
-  2. In case of finetuning model you can variate losses coefficients to make result look more like source identity, or vice versa, save features and attributes of target face
+  1. For first epochs we suggest not to use eye detection loss and scheduler if you train from scratch.
+  2. In case of finetuning model you can variate losses coefficients to make result look more like source identity, or vice versa, save features and attributes of target face.
+  3. You can change backbone for attribute encoder and num_blocks of AddResBlock using parameters `--backbone` and `--num_blocks`.
+  4. For finetuning model you can use our pretrain weights for generator and discriminator that are in folder `weights`. We provide weights for models with unet backbone and 1-3 blocks in AddResBlock. 
   

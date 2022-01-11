@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from .AADLayer import *
+from network.resnet import MLAttrEncoderResnet
 
 
 def weight_init(m):
@@ -30,16 +31,20 @@ class deconv4x4(nn.Module):
         self.bn = norm(out_c)
         self.lrelu = nn.LeakyReLU(0.1, inplace=True)
 
-    def forward(self, input, skip):
+    def forward(self, input, skip, backbone):
         x = self.deconv(input)
         x = self.bn(x)
         x = self.lrelu(x)
-        return torch.cat((x, skip), dim=1)
-
-
+        if backbone == 'linknet':
+            return x+skip
+        else:
+            return torch.cat((x, skip), dim=1)
+    
+    
 class MLAttrEncoder(nn.Module):
-    def __init__(self):
+    def __init__(self, backbone):
         super(MLAttrEncoder, self).__init__()
+        self.backbone = backbone
         self.conv1 = conv4x4(3, 32)
         self.conv2 = conv4x4(32, 64)
         self.conv3 = conv4x4(64, 128)
@@ -47,14 +52,21 @@ class MLAttrEncoder(nn.Module):
         self.conv5 = conv4x4(256, 512)
         self.conv6 = conv4x4(512, 1024)
         self.conv7 = conv4x4(1024, 1024)
-
-        self.deconv1 = deconv4x4(1024, 1024)
-        self.deconv2 = deconv4x4(2048, 512)
-        self.deconv3 = deconv4x4(1024, 256)
-        self.deconv4 = deconv4x4(512, 128)
-        self.deconv5 = deconv4x4(256, 64)
-        self.deconv6 = deconv4x4(128, 32)
-
+        
+        if backbone == 'unet':
+            self.deconv1 = deconv4x4(1024, 1024)
+            self.deconv2 = deconv4x4(2048, 512)
+            self.deconv3 = deconv4x4(1024, 256)
+            self.deconv4 = deconv4x4(512, 128)
+            self.deconv5 = deconv4x4(256, 64)
+            self.deconv6 = deconv4x4(128, 32)
+        elif backbone == 'linknet':
+            self.deconv1 = deconv4x4(1024, 1024)
+            self.deconv2 = deconv4x4(1024, 512)
+            self.deconv3 = deconv4x4(512, 256)
+            self.deconv4 = deconv4x4(256, 128)
+            self.deconv5 = deconv4x4(128, 64)
+            self.deconv6 = deconv4x4(64, 32)
         self.apply(weight_init)
 
     def forward(self, Xt):
@@ -73,29 +85,38 @@ class MLAttrEncoder(nn.Module):
         z_attr1 = self.conv7(feat6)
         # 1024x2x2
 
-        z_attr2 = self.deconv1(z_attr1, feat6)
-        z_attr3 = self.deconv2(z_attr2, feat5)
-        z_attr4 = self.deconv3(z_attr3, feat4)
-        z_attr5 = self.deconv4(z_attr4, feat3)
-        z_attr6 = self.deconv5(z_attr5, feat2)
-        z_attr7 = self.deconv6(z_attr6, feat1)
+        z_attr2 = self.deconv1(z_attr1, feat6, self.backbone)
+        z_attr3 = self.deconv2(z_attr2, feat5, self.backbone)
+        z_attr4 = self.deconv3(z_attr3, feat4, self.backbone)
+        z_attr5 = self.deconv4(z_attr4, feat3, self.backbone)
+        z_attr6 = self.deconv5(z_attr5, feat2, self.backbone)
+        z_attr7 = self.deconv6(z_attr6, feat1, self.backbone)
         z_attr8 = F.interpolate(z_attr7, scale_factor=2, mode='bilinear', align_corners=True)
         return z_attr1, z_attr2, z_attr3, z_attr4, z_attr5, z_attr6, z_attr7, z_attr8
 
-
+    
 class AADGenerator(nn.Module):
-    def __init__(self, c_id=256):
+    def __init__(self, backbone, c_id=256, num_blocks=2):
         super(AADGenerator, self).__init__()
         self.up1 = nn.ConvTranspose2d(c_id, 1024, kernel_size=2, stride=1, padding=0)
-        self.AADBlk1 = AAD_ResBlk(1024, 1024, 1024, c_id)
-        self.AADBlk2 = AAD_ResBlk(1024, 1024, 2048, c_id)
-        self.AADBlk3 = AAD_ResBlk(1024, 1024, 1024, c_id)
-        self.AADBlk4 = AAD_ResBlk(1024, 512, 512, c_id)
-        self.AADBlk5 = AAD_ResBlk(512, 256, 256, c_id)
-        self.AADBlk6 = AAD_ResBlk(256, 128, 128, c_id)
-        self.AADBlk7 = AAD_ResBlk(128, 64, 64, c_id)
-        self.AADBlk8 = AAD_ResBlk(64, 3, 64, c_id)
-
+        self.AADBlk1 = AAD_ResBlk(1024, 1024, 1024, c_id, num_blocks)
+        if backbone == 'linknet':
+            self.AADBlk2 = AAD_ResBlk(1024, 1024, 1024, c_id, num_blocks)
+            self.AADBlk3 = AAD_ResBlk(1024, 1024, 512, c_id, num_blocks)
+            self.AADBlk4 = AAD_ResBlk(1024, 512, 256, c_id, num_blocks)
+            self.AADBlk5 = AAD_ResBlk(512, 256, 128, c_id, num_blocks)
+            self.AADBlk6 = AAD_ResBlk(256, 128, 64, c_id, num_blocks)
+            self.AADBlk7 = AAD_ResBlk(128, 64, 32, c_id, num_blocks)
+            self.AADBlk8 = AAD_ResBlk(64, 3, 32, c_id, num_blocks)
+        else:
+            self.AADBlk2 = AAD_ResBlk(1024, 1024, 2048, c_id, num_blocks)
+            self.AADBlk3 = AAD_ResBlk(1024, 1024, 1024, c_id, num_blocks)
+            self.AADBlk4 = AAD_ResBlk(1024, 512, 512, c_id, num_blocks)
+            self.AADBlk5 = AAD_ResBlk(512, 256, 256, c_id, num_blocks)
+            self.AADBlk6 = AAD_ResBlk(256, 128, 128, c_id, num_blocks)
+            self.AADBlk7 = AAD_ResBlk(128, 64, 64, c_id, num_blocks)
+            self.AADBlk8 = AAD_ResBlk(64, 3, 64, c_id, num_blocks)
+        
         self.apply(weight_init)
 
     def forward(self, z_attr, z_id):
@@ -111,11 +132,15 @@ class AADGenerator(nn.Module):
         return torch.tanh(y)
 
 
+
 class AEI_Net(nn.Module):
-    def __init__(self, c_id=256):
+    def __init__(self, backbone, num_blocks=2, c_id=256):
         super(AEI_Net, self).__init__()
-        self.encoder = MLAttrEncoder()
-        self.generator = AADGenerator(c_id)
+        if backbone in ['unet', 'linknet']:
+            self.encoder = MLAttrEncoder(backbone)
+        elif backbone == 'resnet':
+            self.encoder = MLAttrEncoderResnet()
+        self.generator = AADGenerator(backbone, c_id, num_blocks)
 
     def forward(self, Xt, z_id):
         attr = self.encoder(Xt)
@@ -123,7 +148,6 @@ class AEI_Net(nn.Module):
         return Y, attr
 
     def get_attr(self, X):
-        # with torch.no_grad():
         return self.encoder(X)
 
 

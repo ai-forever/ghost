@@ -169,7 +169,7 @@ def train(args, device):
     max_epoch = args.max_epoch
     
     # initializing main models
-    G = AEI_Net(c_id=512).to(device)
+    G = AEI_Net(args.backbone, num_blocks=args.num_blocks, c_id=512).to(device)
     D = MultiscaleDiscriminator(input_nc=3, n_layers=5, norm_layer=torch.nn.InstanceNorm2d).to(device)
     G.train()
     D.train()
@@ -267,6 +267,9 @@ if __name__ == "__main__":
     parser.add_argument('--weight_rec', default=10, type=float, help='Reconstruction Loss weight')
     parser.add_argument('--weight_eyes', default=0., type=float, help='Eyes Loss weight')
     # training params you may want to change
+    
+    parser.add_argument('--backbone', default='unet', const='unet', nargs='?', choices=['unet', 'linknet', 'resnet'], help='Backbone for attribute encoder')
+    parser.add_argument('--num_blocks', default=2, type=int, help='Numbers of AddBlocks at AddResblock')
     parser.add_argument('--same_person', default=0.2, type=float, help='Probability of using same person identity during training')
     parser.add_argument('--same_identity', default=True, type=bool, help='Using simswap approach, when source_id = target_id. Only possible with vgg=True')
     parser.add_argument('--diff_eq_same', default=False, type=bool, help='Don\'t use info about where is defferent identities')

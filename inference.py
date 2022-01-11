@@ -23,7 +23,7 @@ def init_models(args):
     app.prepare(ctx_id= 0, det_thresh=0.6, det_size=(640,640))
 
     # main model for generation
-    G = AEI_Net(c_id=512)
+    G = AEI_Net(args.backbone, num_blocks=args.num_blocks, c_id=512)
     G.eval()
     G.load_state_dict(torch.load(args.G_path, map_location=torch.device('cpu')))
     G = G.cuda()
@@ -127,8 +127,11 @@ def main(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     
-    # dataset params
-    parser.add_argument('--G_path', default='weights/G_0_035000_init_arch_arcface2.pth', type=str, help='Path to weights for G')
+    # Generator params
+    parser.add_argument('--G_path', default='weights/G_unet_2blocks.pth', type=str, help='Path to weights for G')
+    parser.add_argument('--backbone', default='unet', const='unet', nargs='?', choices=['unet', 'linknet', 'resnet'], help='Backbone for attribute encoder')
+    parser.add_argument('--num_blocks', default=2, type=int, help='Numbers of AddBlocks at AddResblock')
+    
     parser.add_argument('--batch_size', default=40, type=int)
     parser.add_argument('--crop_size', default=224, type=int, help="Don't change this")
     parser.add_argument('--use_sr', default=False, type=bool, help='True for super resolution on swap images')
