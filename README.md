@@ -66,6 +66,6 @@ We provide a lot of different options for the training. More info about each opt
 ### Tips:
   1. For first epochs we suggest not to use eye detection loss and scheduler if you train from scratch.
   2. In case of finetuning model you can variate losses coefficients to make result look more like source identity, or vice versa, save features and attributes of target face.
-  3. You can change backbone for attribute encoder and num_blocks of AddResBlock using parameters `--backbone` and `--num_blocks`.
-  4. For finetuning model you can use our pretrain weights for generator and discriminator that are in folder `weights`. We provide weights for models with unet backbone and 1-3 blocks in AddResBlock. 
+  3. You can change backbone for attribute encoder and num_blocks of AAD ResBlk using parameters `--backbone` and `--num_blocks`.
+  4. For finetuning model you can use our pretrain weights for generator and discriminator that are in folder `weights`. We provide weights for models with unet backbone and 1-3 blocks in AAD ResBlk. The main model is model with 2 blocks in AAD ResBlk.
   
