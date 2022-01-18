@@ -277,7 +277,7 @@ if __name__ == "__main__":
     parser.add_argument('--discr_force', default=False, type=bool, help='If True Discriminator would not train when adversarial loss is high')
     parser.add_argument('--scheduler', default=False, type=bool, help='If True decreasing LR is used for learning of generator and discriminator')
     parser.add_argument('--scheduler_step', default=5000, type=int)
-    parser.add_argument('--scheduler_gamma', default=0.2, type=int, help='It is value, which shows how many times to decrease LR')
+    parser.add_argument('--scheduler_gamma', default=0.2, type=float, help='It is value, which shows how many times to decrease LR')
     parser.add_argument('--eye_detector_loss', default=False, type=bool, help='If True eye loss with using AdaptiveWingLoss detector is applied to generator')
     # info about this run
     parser.add_argument('--use_wandb', default=False, type=bool, help='Use wandb to track your experiments or not')
