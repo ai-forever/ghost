@@ -28,7 +28,8 @@
   ```bash
   pip install -r requirements.txt
   ```
-  If it is not possible to install onnxruntime-gpu, try onnxruntime instead 
+  If it is not possible to install onnxruntime-gpu, try onnxruntime instead  
+  
 3. Download weights
   ```bash
   sh download_models.sh
