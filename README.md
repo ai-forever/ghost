@@ -1,3 +1,5 @@
+[[Хабр]](https://habr.com/ru/company/sberbank/blog/645919/) [[Colab]](https://colab.research.google.com/drive/1B-2JoRxZZwrY2eK_E7TB5VYcae3EjQ1f)
+
 # SberSwap
 
 ## Results 
@@ -26,6 +28,7 @@
   ```bash
   pip install -r requirements.txt
   ```
+  If it is not possible to install onnxruntime-gpu, try onnxruntime instead 
 3. Download weights
   ```bash
   sh download_models.sh
