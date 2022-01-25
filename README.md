@@ -17,7 +17,7 @@
   
 1. Clone this repository
   ```bash
-  git clone https://github.com/Danyache/sber-swap.git
+  git clone https://github.com/sberbank-ai/sber-swap.git
   cd sber-swap
   git submodule init
   git submodule update
