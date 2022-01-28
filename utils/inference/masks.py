@@ -46,7 +46,7 @@ def face_mask_static(image: np.ndarray, landmarks: np.ndarray, landmarks_tgt: np
         
         offset = max(left, right)
         
-        if offset > 6: # изначально было -1
+        if offset > 6:
             erode = 15
             sigmaX = 15
             sigmaY = 10
@@ -75,7 +75,6 @@ def face_mask_static(image: np.ndarray, landmarks: np.ndarray, landmarks_tgt: np
     
     mask = get_mask(image, landmarks)
     mask = erode_and_blur(mask, erode, sigmaX, sigmaY, True)
-    #mask = erode_blur(mask, 7, 45, True)
     
     if params is None:
         return mask/255, [erode, sigmaX, sigmaY]
