@@ -2,7 +2,7 @@ import numpy as np
 import cv2
 
 
-def expand_eyebrows_our(lmrks, eyebrows_expand_mod=1.0):
+def expand_eyebrows(lmrks, eyebrows_expand_mod=1.0):
 
     lmrks = np.array( lmrks.copy(), dtype=np.int )
 
@@ -69,9 +69,12 @@ def face_mask_static(image: np.ndarray, landmarks: np.ndarray, landmarks_tgt: np
         sigmaY = params[2]
     
     if erode == 15:
-        landmarks = expand_eyebrows_our(landmarks, eyebrows_expand_mod=1.7)
+        eyebrows_expand_mod=2.7
+    elif erode == -5:
+        eyebrows_expand_mod=0.5
     else:
-        landmarks = expand_eyebrows_our(landmarks, eyebrows_expand_mod=1.0)
+        eyebrows_expand_mod=2.0
+    landmarks = expand_eyebrows(landmarks, eyebrows_expand_mod=eyebrows_expand_mod)
     
     mask = get_mask(image, landmarks)
     mask = erode_and_blur(mask, erode, sigmaX, sigmaY, True)
