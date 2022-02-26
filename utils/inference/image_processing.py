@@ -57,13 +57,14 @@ def get_final_image(final_frames: List[np.ndarray],
     params = [None for i in range(len(final_frames))]
     
     for i in range(len(final_frames)):
-        landmarks = handler.get_without_detection_without_transform(final_frames[i][0])     
+        frame = cv2.resize(final_frames[i][0], (224, 224))
+        
+        landmarks = handler.get_without_detection_without_transform(frame)     
         landmarks_tgt = handler.get_without_detection_without_transform(crop_frames[i][0])
 
         mask, _ = face_mask_static(crop_frames[i][0], landmarks, landmarks_tgt, params[i])
         mat_rev = cv2.invertAffineTransform(tfm_arrays[i][0])
 
-        frame = cv2.resize(final_frames[i][0], (224, 224))
         swap_t = cv2.warpAffine(frame, mat_rev, (full_frame.shape[1], full_frame.shape[0]), borderMode=cv2.BORDER_REPLICATE)
         mask_t = cv2.warpAffine(mask, mat_rev, (full_frame.shape[1], full_frame.shape[0]))
         mask_t = np.expand_dims(mask_t, 2)
