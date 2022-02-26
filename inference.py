@@ -137,16 +137,16 @@ if __name__ == "__main__":
     parser.add_argument('--use_sr', default=False, type=bool, help='True for super resolution on swap images')
     parser.add_argument('--similarity_th', default=0.15, type=float, help='Threshold for selecting a face similar to the target')
     
-    parser.add_argument('--source_paths', default=['examples/images/mark.jpg', 'examples/images/elon_musk.jpg', 'examples/images/zak.jpg'], nargs='+')
-    parser.add_argument('--target_faces_paths', default=['examples/images/1.png', 'examples/images/2.png', 'examples/images/3.png'], nargs='+', help="It's necessary to set the face/faces in the video to which the source face/faces is swapped. You can skip this parametr, and then any face is selected in the target video for swap.")
+    parser.add_argument('--source_paths', default=['examples/images/mark.jpg', 'examples/images/elon_musk.jpg'], nargs='+')
+    parser.add_argument('--target_faces_paths', default=[], nargs='+', help="It's necessary to set the face/faces in the video to which the source face/faces is swapped. You can skip this parametr, and then any face is selected in the target video for swap.")
     
     # parameters for image to video
-    parser.add_argument('--target_video', default='examples/videos/efiop_short.mp4', type=str, help="It's necessary for image to video swap")
+    parser.add_argument('--target_video', default='examples/videos/nggyup.mp4', type=str, help="It's necessary for image to video swap")
     parser.add_argument('--out_video_name', default='examples/results/result.mp4', type=str, help="It's necessary for image to video swap")
     
     # parameters for image to image
     parser.add_argument('--image_to_image', default=False, type=bool, help='True for image to image swap, False for swap on video')
-    parser.add_argument('--target_image', default='examples/images/3person.png', type=str, help="It's necessary for image to image swap")
+    parser.add_argument('--target_image', default='examples/images/beckham.jpg', type=str, help="It's necessary for image to image swap")
     parser.add_argument('--out_image_name', default='examples/results/result.png', type=str,help="It's necessary for image to image swap")
     
     args = parser.parse_args()
