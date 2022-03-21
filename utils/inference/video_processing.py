@@ -28,8 +28,8 @@ def add_audio_from_another_video(video_with_sound: str,
         os.makedirs('./examples/audio/')
     fast_cmd = "-c:v libx264 -preset ultrafast -crf 18" if fast_cpu else ""
     gpu_cmd = "-c:v h264_nvenc" if gpu else ""
-    os.system(f"ffmpeg -i {video_with_sound} -vn -vcodec h264_nvenc ./examples/audio/{audio_name}.m4a")
-    os.system(f"ffmpeg -i {video_without_sound} -i ./examples/audio/{audio_name}.m4a {fast_cmd} {gpu_cmd}{video_without_sound[:-4]}_audio.mp4 -y")
+    os.system(f"ffmpeg -v -8 -i {video_with_sound} -vn -vcodec h264_nvenc ./examples/audio/{audio_name}.m4a")
+    os.system(f"ffmpeg -v -8 -i {video_without_sound} -i ./examples/audio/{audio_name}.m4a {fast_cmd} {gpu_cmd}{video_without_sound[:-4]}_audio.mp4 -y")
     os.system(f"rm -rf ./examples/audio/{audio_name}.m4a")
     os.system(f"mv {video_without_sound[:-4]}_audio.mp4 {video_without_sound}")
     
@@ -100,8 +100,7 @@ def smooth_landmarks(kps_arr, n = 2):
         for a in kps_arr_s:
             a_smooth = []
             for i in range(len(a)):
-                q = min(i-0, len(a)-i-1, n)
-                print(q)          
+                q = min(i-0, len(a)-i-1, n)      
                 a_smooth.append(np.mean( np.array(a[i-q:i+1+q]), axis=0 ) )
 
             kps_arr_smooth += a_smooth
@@ -200,7 +199,7 @@ def get_final_video(final_frames: List[np.ndarray],
     Create final video from frames
     """
 
-    out = cv2.VideoWriter(f"{OUT_VIDEO_NAME}", cv2.VideoWriter_fourcc(*'MP4V'), fps, (full_frames[0].shape[1], full_frames[0].shape[0]))
+    out = cv2.VideoWriter(f"{OUT_VIDEO_NAME}", cv2.VideoWriter_fourcc(*'mp4v'), fps, (full_frames[0].shape[1], full_frames[0].shape[0]))
     size = (full_frames[0].shape[0], full_frames[0].shape[1])
     params = [None for i in range(len(crop_frames))]
     result_frames = full_frames.copy()
