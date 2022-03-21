@@ -67,16 +67,18 @@ class Face_detect_crop:
         #         kps = kpss[i]
         #     M, _ = face_align.estimate_norm(kps, crop_size, mode ='None') 
         #     align_img = cv2.warpAffine(img, M, (crop_size, crop_size), borderValue=0.0)
-        align_img_list = []
-        M_list = []
+        # align_img_list = []
+        # M_list = []
+        kps_list = []
         for i in range(bboxes.shape[0]):
             kps = None
             if kpss is not None:
                 kps = kpss[i]
-            M, _ = face_align.estimate_norm(kps, crop_size, mode ='None') 
-            align_img = cv2.warpAffine(img, M, (crop_size, crop_size), borderValue=0.0)
-            align_img_list.append(align_img)
-            M_list.append(M)
+            # M, _ = face_align.estimate_norm(kps, crop_size, mode ='None') 
+            # align_img = cv2.warpAffine(img, M, (crop_size, crop_size), borderValue=0.0)
+            # align_img_list.append(align_img)
+            # M_list.append(M)
+            kps_list.append(kps)
 
         # det_score = bboxes[..., 4]
 
@@ -88,4 +90,4 @@ class Face_detect_crop:
         # M, _ = face_align.estimate_norm(kps, crop_size, mode ='None') 
         # align_img = cv2.warpAffine(img, M, (crop_size, crop_size), borderValue=0.0)
         
-        return align_img_list, M_list
+        return kps_list
