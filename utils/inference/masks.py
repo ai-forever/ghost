@@ -4,7 +4,7 @@ import cv2
 
 def expand_eyebrows(lmrks, eyebrows_expand_mod=1.0):
 
-    lmrks = np.array( lmrks.copy(), dtype=np.int )
+    lmrks = np.array( lmrks.copy(), dtype=np.int32 )
 
     # Top of the eye arrays
     bot_l = lmrks[[35, 41, 40, 42, 39]]

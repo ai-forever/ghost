@@ -7,14 +7,17 @@ import torch
 import cv2
 from .masks import face_mask_static 
 from matplotlib import pyplot as plt
+from insightface.utils import face_align
 
 
 def crop_face(image_full: np.ndarray, app: Callable, crop_size: int) -> np.ndarray:
     """
     Crop face from image and resize
     """
-    image, _ = app.get(image_full, crop_size)
-    return image
+    kps = app.get(image_full, crop_size)
+    M, _ = face_align.estimate_norm(kps[0], crop_size, mode ='None') 
+    align_img = cv2.warpAffine(image_full, M, (crop_size, crop_size), borderValue=0.0)         
+    return [align_img]
 
 
 def normalize_and_torch(image: np.ndarray) -> torch.tensor:
