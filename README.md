@@ -1,6 +1,17 @@
-[[Хабр]](https://habr.com/ru/company/sberbank/blog/645919/) [[Colab]](https://colab.research.google.com/drive/1B-2JoRxZZwrY2eK_E7TB5VYcae3EjQ1f)
+[[Paper](https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=9851423)] [[Habr](https://habr.com/ru/company/sberbank/blog/645919/)]
 
-# SberSwap
+# 👻 GHOST: Generative High-fidelity One Shot Transfer 
+
+Our paper ["GHOST—A New Face Swap Approach for Image and Video Domains"](https://ieeexplore.ieee.org/abstract/document/9851423) has been published on IEEE Xplore.
+
+<p align="center">
+  Google Colab Demo
+</p>
+<p align="center">
+  <a href="https://colab.research.google.com/drive/1B-2JoRxZZwrY2eK_E7TB5VYcae3EjQ1f">
+  <img src="https://colab.research.google.com/assets/colab-badge.svg"/>
+  </a>
+</p>
 
 ## Results 
 ![](/examples/images/example1.png)
