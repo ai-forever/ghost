@@ -4,10 +4,10 @@
 
 Our paper ["GHOST—A New Face Swap Approach for Image and Video Domains"](https://ieeexplore.ieee.org/abstract/document/9851423) has been published on IEEE Xplore.
 
-<p align="center">
+<p align="left">
   Google Colab Demo
 </p>
-<p align="center">
+<p align="left">
   <a href="https://colab.research.google.com/drive/1B-2JoRxZZwrY2eK_E7TB5VYcae3EjQ1f">
   <img src="https://colab.research.google.com/assets/colab-badge.svg"/>
   </a>
