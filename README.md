@@ -13,12 +13,27 @@ Our paper ["GHOST—A New Face Swap Approach for Image and Video Domains"](https
   </a>
 </p>
 
-## Results 
+## GHOST Ethics 
+
+Deepfake stands for a face swapping algorithm where the source and target can be an image or a video. Researchers have investigated sophisticated generative adversarial networks (GAN), autoencoders, and other approaches to establish precise and robust algorithms for face swapping. However, the achieved results are far from perfect in terms of human and visual evaluation. In this study, we propose a new one-shot pipeline for image-to-image and image-to-video face swap solutions - GHOST (Generative High-fidelity One Shot Transfer).
+
+Deep fake synthesis methods have been improved a lot in quality in recent years. The research solutions were wrapped in easy-to-use API, software and different plugins for people with a little technical knowledge. As a result, almost anyone is able to make a deepfake image or video by just doing a short list of simple operations. At the same time, a lot of people with malicious intent are able to use this technology in order to produce harmful content. High distribution of such a content over the web leads to caution, disfavor and other negative feedback to deepfake synthesis or face swap research.
+
+As a group of researchers, we are not trying to denigrate celebrities and statesmen or to demean anyone. We are computer vision researchers, we are engineers, we are activists, we are hobbyists, we are human beings. To this end, we feel that it's time to come out with a standard statement of what this technology is and isn't as far as us researchers are concerned.
+* GHOST is not for creating inappropriate content.
+* GHOST is not for changing faces without consent or with the intent of hiding its use.
+* GHOST is not for any illicit, unethical, or questionable purposes.
+* GHOST exists to experiment and discover AI techniques, for social or political commentary, for movies, and for any number of ethical and reasonable uses.
+
+We are very troubled by the fact that GHOST can be used for unethical and disreputable things. However, we support the development of tools and techniques that can be used ethically as well as provide education and experience in AI for anyone who wants to learn it hands-on. Now and further, we take a **zero-tolerance approach** and **total disregard** to anyone using this software for any unethical purposes and will actively discourage any such uses.
+
+
+## Image Swap Results 
 ![](/examples/images/example1.png)
 
 ![](/examples/images/example2.png)
 
-## Video Swap
+## Video Swap Results
 <div>
 <img src="/examples/videos/orig.webp" width="360"/>
 <img src="/examples/videos/elon.webp" width="360"/>
@@ -79,8 +94,8 @@ We also provide the training code for face swap model as follows:
 We provide a lot of different options for the training. More info about each option you can find in `train.py` file. If you would like to use wandb logging of the experiments, you should login to wandb first  `--wandb login`.
   
 ### Tips:
-  1. For first epochs we suggest not to use eye detection loss and scheduler if you train from scratch.
-  2. In case of finetuning model you can variate losses coefficients to make result look more like source identity, or vice versa, save features and attributes of target face.
-  3. You can change backbone for attribute encoder and num_blocks of AAD ResBlk using parameters `--backbone` and `--num_blocks`.
-  4. For finetuning model you can use our pretrain weights for generator and discriminator that are in folder `weights`. We provide weights for models with unet backbone and 1-3 blocks in AAD ResBlk. The main model is model with 2 blocks in AAD ResBlk.
+  1. For the first epochs we suggest not to use eye detection loss and scheduler if you train from scratch.
+  2. In case of finetuning you can variate losses coefficients to make the output look similar to the source identity, or vice versa, to save features and attributes of target face.
+  3. You can change the backbone of the attribute encoder and num_blocks of AAD ResBlk using parameters `--backbone` and `--num_blocks`.
+  4. During the finetuning stage you can use our pretrain weights for generator and discriminator that are located in `weights` folder. We provide the weights for models with U-Net backbone and 1-3 blocks in AAD ResBlk. The main model architecture contains 2 blocks in AAD ResBlk.
   
