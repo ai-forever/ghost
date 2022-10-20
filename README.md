@@ -93,9 +93,30 @@ We also provide the training code for face swap model as follows:
   ```
 We provide a lot of different options for the training. More info about each option you can find in `train.py` file. If you would like to use wandb logging of the experiments, you should login to wandb first  `--wandb login`.
   
-### Tips:
+### Tips
   1. For the first epochs we suggest not to use eye detection loss and scheduler if you train from scratch.
   2. In case of finetuning you can variate losses coefficients to make the output look similar to the source identity, or vice versa, to save features and attributes of target face.
   3. You can change the backbone of the attribute encoder and num_blocks of AAD ResBlk using parameters `--backbone` and `--num_blocks`.
   4. During the finetuning stage you can use our pretrain weights for generator and discriminator that are located in `weights` folder. We provide the weights for models with U-Net backbone and 1-3 blocks in AAD ResBlk. The main model architecture contains 2 blocks in AAD ResBlk.
+  
+## Cite
+If you use our model in your research, we would appreciate using the following citation
+
+  ### BibTeX Citation
+  ```
+  @article{9851423,  
+           author={Groshev, Alexander and Maltseva, Anastasia and Chesakov, Daniil and Kuznetsov, Andrey and Dimitrov, Denis},  
+           journal={IEEE Access},   
+           title={GHOST—A New Face Swap Approach for Image and Video Domains},   
+           year={2022},  
+           volume={10},  
+           number={},  
+           pages={83452-83462},  
+           doi={10.1109/ACCESS.2022.3196668}
+  }
+  ```
+  
+  ### General Citation
+  
+  A. Groshev, A. Maltseva, D. Chesakov, A. Kuznetsov and D. Dimitrov, "GHOST—A New Face Swap Approach for Image and Video Domains," in IEEE Access, vol. 10, pp. 83452-83462, 2022, doi: 10.1109/ACCESS.2022.3196668.
   
