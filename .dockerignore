@@ -1,0 +1,5 @@
+**/*.jpg
+**/*.png
+**/*.mp4
+**/*.wav
+weights/D_unet_*.pth

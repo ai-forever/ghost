@@ -36,7 +36,7 @@ def init_models(args):
     netArc.eval()
 
     # model to get face landmarks 
-    handler = Handler('./coordinate_reg/model/2d106det', 0, ctx_id=0, det_size=640)
+    handler = Handler('./coordinate_reg/model/2d106det', 0, ctx_id=-1, det_size=640) # -1 for cpu
 
     # model to make superres of face, set use_sr=True if you want to use super resolution or use_sr=False if you don't
     if args.use_sr:
@@ -53,6 +53,7 @@ def init_models(args):
     
     
 def main(args):
+    print('Init models...')
     app, G, netArc, handler, model = init_models(args)
     
     # get crops from source images
@@ -125,6 +126,7 @@ def main(args):
     
 
 if __name__ == "__main__":
+    print('Init parser...')
     parser = argparse.ArgumentParser()
     
     # Generator params
