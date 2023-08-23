@@ -1,0 +1,11 @@
+opencv-python
+onnx==1.9.0
+onnxruntime==1.4.0
+numpy<=1.20
+mxnet
+scikit-image
+insightface==0.2.1
+requests==2.25.1
+kornia==0.5.4
+dill
+protobuf<=3.20
