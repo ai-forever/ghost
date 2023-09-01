@@ -114,7 +114,8 @@ def main(args):
                         fps, 
                         handler)
         
-        add_audio_from_another_video(args.target_video, args.out_video_name, "audio")
+        if not args.ignore_audio:
+            add_audio_from_another_video(args.target_video, args.out_video_name, "audio")
         print(f"Video saved with path {args.out_video_name}")
     else:
         result = get_final_image(final_frames_list, crop_frames_list, full_frames[0], tfm_array_list, handler)
@@ -149,5 +150,7 @@ if __name__ == "__main__":
     parser.add_argument('--target_image', default='examples/images/beckham.jpg', type=str, help="It's necessary for image to image swap")
     parser.add_argument('--out_image_name', default='examples/results/result.png', type=str,help="It's necessary for image to image swap")
     
+    parser.add_argument('--ignore_audio', default=False, type=bool, help="Do not include the audio on the video result")
+
     args = parser.parse_args()
     main(args)

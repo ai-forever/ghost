@@ -9,7 +9,7 @@ onnxruntime-gpu==1.4.0
 mxnet-cu101mkl
 scikit-image
 insightface==0.2.1
-requests==2.25.1
+requests
 kornia==0.5.4
 dill
 wandb
