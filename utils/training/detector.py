@@ -28,7 +28,7 @@ def detect_landmarks(inputs, model_ft):
     return eyes, pred_heatmap[:,96,:,:], pred_heatmap[:,97,:,:]
 
 
-def paint_eyes(images, eyes):
+def paint_eyes(images, eyes)://Paint eyes
     list_eyes = []
     for i in range(len(images)):
         mask = torch2image(images[i])
