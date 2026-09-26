@@ -152,7 +152,7 @@ def crop_frames_and_get_transforms(full_frames: List[np.ndarray],
             
         except TypeError:
             for q in range (len(target_embeds)):                
-                kps_array[0].append([])
+                kps_array[q].append([])
         
     smooth_kps = smooth_landmarks(kps_array, n = 2)
                 
