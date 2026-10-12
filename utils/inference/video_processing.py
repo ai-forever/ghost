@@ -28,8 +28,20 @@ def add_audio_from_another_video(video_with_sound: str,
         os.makedirs('./examples/audio/')
     fast_cmd = "-c:v libx264 -preset ultrafast -crf 18" if fast_cpu else ""
     gpu_cmd = "-c:v h264_nvenc" if gpu else ""
-    os.system(f"ffmpeg -v -8 -i {video_with_sound} -vn -vcodec h264_nvenc ./examples/audio/{audio_name}.m4a")
-    os.system(f"ffmpeg -v -8 -i {video_without_sound} -i ./examples/audio/{audio_name}.m4a {fast_cmd} {gpu_cmd}{video_without_sound[:-4]}_audio.mp4 -y")
+    # Extract the audio stream from the source video. ``-vn`` drops video, so a
+    # video encoder (``-vcodec``) is a no-op here; copy the audio stream instead.
+    os.system(
+        f"ffmpeg -v -8 -i {video_with_sound} -vn -acodec copy "
+        f"./examples/audio/{audio_name}.m4a"
+    )
+    # Mux the extracted audio into the (silent) output video. Keep the output
+    # path separated from the codec flags so the command stays well-formed when
+    # ``gpu=True`` (previously the path was concatenated onto ``gpu_cmd``).
+    os.system(
+        f"ffmpeg -v -8 -i {video_without_sound} "
+        f"-i ./examples/audio/{audio_name}.m4a "
+        f"{fast_cmd} {gpu_cmd} {video_without_sound[:-4]}_audio.mp4 -y"
+    )
     os.system(f"rm -rf ./examples/audio/{audio_name}.m4a")
     os.system(f"mv {video_without_sound[:-4]}_audio.mp4 {video_without_sound}")
     
