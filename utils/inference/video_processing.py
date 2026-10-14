@@ -75,7 +75,7 @@ def get_target(full_frames: List[np.ndarray],
         if i < len(full_frames):
             try:
                 target = [crop_face(full_frames[i], app, crop_size)[0]]
-            except TypeError:
+            except (TypeError, IndexError):
                 i += 1
         else:
             print("Video doesn't contain face!")
@@ -147,12 +147,15 @@ def crop_frames_and_get_transforms(full_frames: List[np.ndarray],
                     else:
                         kps_array[idx].append([])
 
+            elif len(kps) == 0:
+                for q in range(len(target_embeds)):
+                    kps_array[q].append([])
             else:
-                kps_array[0].append(kps[0])     
-            
-        except TypeError:
-            for q in range (len(target_embeds)):                
-                kps_array[0].append([])
+                kps_array[0].append(kps[0])
+
+        except (TypeError, IndexError):
+            for q in range(len(target_embeds)):
+                kps_array[q].append([])
         
     smooth_kps = smooth_landmarks(kps_array, n = 2)
                 
