@@ -134,7 +134,7 @@ if __name__ == "__main__":
     
     parser.add_argument('--batch_size', default=40, type=int)
     parser.add_argument('--crop_size', default=224, type=int, help="Don't change this")
-    parser.add_argument('--use_sr', default=False, type=bool, help='True for super resolution on swap images')
+    parser.add_argument('--use_sr', action='store_true', help='Use super resolution on swap images')
     parser.add_argument('--similarity_th', default=0.15, type=float, help='Threshold for selecting a face similar to the target')
     
     parser.add_argument('--source_paths', default=['examples/images/mark.jpg', 'examples/images/elon_musk.jpg'], nargs='+')
@@ -145,7 +145,7 @@ if __name__ == "__main__":
     parser.add_argument('--out_video_name', default='examples/results/result.mp4', type=str, help="It's necessary for image to video swap")
     
     # parameters for image to image
-    parser.add_argument('--image_to_image', default=False, type=bool, help='True for image to image swap, False for swap on video')
+    parser.add_argument('--image_to_image', action='store_true', help='Swap on an image instead of a video')
     parser.add_argument('--target_image', default='examples/images/beckham.jpg', type=str, help="It's necessary for image to image swap")
     parser.add_argument('--out_image_name', default='examples/results/result.png', type=str,help="It's necessary for image to image swap")
     
