@@ -63,7 +63,7 @@ def main(args):
             img = cv2.imread(source_path)
             img = crop_face(img, app, args.crop_size)[0]
             source.append(img[:, :, ::-1])
-    except TypeError:
+    except (TypeError, IndexError):
         print("Bad source images!")
         exit()
         
@@ -87,7 +87,7 @@ def main(args):
                 img = cv2.imread(target_faces_path)
                 img = crop_face(img, app, args.crop_size)[0]
                 target.append(img)
-        except TypeError:
+        except (TypeError, IndexError):
             print("Bad target images!")
             exit()
         
